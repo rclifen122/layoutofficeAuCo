@@ -133,46 +133,6 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
     </div>
   );
 
-  // Helper for Room 12: Table against Top Wall
-  const renderWallTableTop = (seats: SeatType[]) => (
-    <div className="flex flex-col items-center w-full">
-      {/* Table Top */}
-      <div className="flex border-4 border-gray-300 bg-white border-t-0">
-        {seats.map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
-      </div>
-      {/* Chairs Below */}
-      <div className="flex justify-center w-full gap-0">
-        {seats.map(s => (
-          <div key={`chair-12-top-${s.id}`} className="w-20 flex justify-center">
-            <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mt-1">
-              <Armchair size={14} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  // Helper for Room 12: Table against Bottom Wall
-  const renderWallTableBottom = (seats: SeatType[]) => (
-    <div className="flex flex-col items-center w-full">
-      {/* Chairs Above */}
-      <div className="flex justify-center w-full gap-0">
-        {seats.map(s => (
-          <div key={`chair-12-bot-${s.id}`} className="w-20 flex justify-center">
-            <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mb-1">
-              <Armchair size={14} className="rotate-180" />
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* Table Bottom */}
-      <div className="flex border-4 border-gray-300 bg-white border-b-0">
-        {seats.map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
-      </div>
-    </div>
-  );
-
   // Helper for rendering doors (Red outlined rectangles as requested)
   const renderDoor = (className: string) => (
     <div className={`absolute bg-white border-2 border-red-500 z-20 flex items-center justify-center ${className}`}>
