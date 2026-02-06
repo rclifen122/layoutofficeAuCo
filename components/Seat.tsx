@@ -31,7 +31,7 @@ const Seat: React.FC<SeatProps> = ({ seat, assignedEmployee, isSelected, onSelec
         }
       }}
       className={`
-        relative flex flex-col items-center justify-center p-0.5 rounded-sm border-2 transition-all cursor-pointer w-12 h-12 shadow-sm
+        relative flex flex-col items-center justify-center p-0.5 rounded-sm border-2 transition-all cursor-pointer w-20 h-20 shadow-sm
         ${assignedEmployee
           ? 'bg-blue-100 border-blue-500 cursor-grab active:cursor-grabbing'
           : isTargetCandidate
@@ -49,12 +49,12 @@ const Seat: React.FC<SeatProps> = ({ seat, assignedEmployee, isSelected, onSelec
             // Use the full name or last 2 words as before, but ensure we allow wrapping
             const displayText = assignedEmployee.name.toUpperCase();
             // Simple heuristic: if it's very long, allow wrap with hyphens
-            const isLongName = displayText.length > 10;
+            const isLongName = displayText.length > 15;
 
             return (
               <span
                 className={`
-                  ${isLongName ? 'text-[9px] leading-[9px]' : 'text-[10px] leading-3'} 
+                  ${isLongName ? 'text-[10px] leading-3' : 'text-xs leading-4'} 
                   font-bold text-center text-blue-900 select-none
                   break-words whitespace-normal hyphens-auto w-full
                 `}

@@ -44,7 +44,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
 
   // Helper to render a cluster of seats with minimal gap
   const renderCluster = (topSeats: SeatType[], bottomSeats: SeatType[]) => (
-    <div className="flex flex-col items-center gap-0.5 w-28">
+    <div className="flex flex-col items-center gap-0.5">
       <div className="flex gap-0.5 justify-center w-full">
         {topSeats.map(renderSeat)}
       </div>
