@@ -4,6 +4,7 @@ import { MOCK_EMPLOYEES, ALL_SEATS } from './constants';
 import EmployeeList from './components/EmployeeList';
 import FloorPlan from './components/FloorPlan';
 import { generateSmartSeating } from './services/geminiService';
+import { supabase } from './services/supabaseClient';
 import { Save, RefreshCcw, Layout, Maximize2, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
@@ -14,7 +15,64 @@ const App: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState<{ msg: string, type: 'success' | 'error' } | null>(null);
+
+  // Load assignments from Supabase on mount
+  useEffect(() => {
+    const loadAssignments = async () => {
+      const { data, error } = await supabase
+        .from('seat_assignments')
+        .select('seat_id, employee_id');
+
+      if (error) {
+        console.error('Error loading assignments:', error);
+        return;
+      }
+
+      if (data) {
+        const loadedAssignments: Assignment[] = data.map((item: any) => ({
+          seatId: item.seat_id,
+          employeeId: item.employee_id
+        }));
+        setAssignments(loadedAssignments);
+      }
+    };
+
+    loadAssignments();
+  }, []);
+
+  const handleSaveSeats = async () => {
+    setIsSaving(true);
+    try {
+      // 1. Clear existing assignments (simple approach for single layout)
+      const { error: deleteError } = await supabase
+        .from('seat_assignments')
+        .delete()
+        .neq('id', 0); // Delete all rows where id is not 0 (effectively all)
+
+      if (deleteError) throw deleteError;
+
+      // 2. Insert new assignments
+      if (assignments.length > 0) {
+        const { error: insertError } = await supabase
+          .from('seat_assignments')
+          .insert(assignments.map(a => ({
+            seat_id: a.seatId,
+            employee_id: a.employeeId
+          })));
+
+        if (insertError) throw insertError;
+      }
+
+      showNotification('Đã lưu sơ đồ thành công!', 'success');
+    } catch (error) {
+      console.error('Error saving:', error);
+      showNotification('Lỗi khi lưu sơ đồ.', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Derived state
   const unassignedEmployees = employees.filter(e => !assignments.find(a => a.employeeId === e.id));
@@ -235,9 +293,10 @@ const App: React.FC = () => {
           </button>
           <button
             className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow transition-colors text-sm font-semibold"
-            onClick={() => alert("Chức năng lưu chưa được tích hợp backend")}
+            onClick={handleSaveSeats}
+            disabled={isSaving}
           >
-            <Save size={16} /> Lưu sơ đồ
+            <Save size={16} /> {isSaving ? 'Đang lưu...' : 'Lưu sơ đồ'}
           </button>
         </div>
       </header>
