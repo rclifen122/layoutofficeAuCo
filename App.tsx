@@ -209,28 +209,31 @@ const App: React.FC = () => {
     try {
       showNotification('Đang tạo PDF...', 'success');
 
-      // Get the full scrollable dimensions of the element
-      const fullWidth = input.scrollWidth;
-      const fullHeight = input.scrollHeight;
+      // Get actual dimensions
+      const rect = input.getBoundingClientRect();
+      const scrollWidth = Math.max(input.scrollWidth, rect.width);
+      const scrollHeight = Math.max(input.scrollHeight, rect.height);
 
-      // Use higher scale for better quality and capture full content
+      // Capture full content with proper dimensions
       const canvas = await html2canvas(input, {
         scale: 2,
         useCORS: true,
         logging: false,
-        width: fullWidth,
-        height: fullHeight,
-        windowWidth: fullWidth,
-        windowHeight: fullHeight,
+        width: scrollWidth,
+        height: scrollHeight,
+        windowWidth: scrollWidth,
+        windowHeight: scrollHeight,
+        x: 0,
+        y: 0,
         scrollX: 0,
         scrollY: 0
       });
 
       const imgData = canvas.toDataURL('image/png');
 
-      // Calculate dimensions for PDF (scale down for reasonable file size)
-      const pdfWidth = canvas.width / 2;
-      const pdfHeight = canvas.height / 2;
+      // PDF dimensions (divide by scale factor)
+      const pdfWidth = scrollWidth;
+      const pdfHeight = scrollHeight;
 
       const pdf = new jsPDF({
         orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
