@@ -157,17 +157,14 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         const contentHeight = room35ContentRef.current.scrollHeight;
         const contentWidth = room35ContentRef.current.scrollWidth;
 
-        const containerHeight = container.height - 48; // Padding adjustment
-        const containerWidth = container.width - 48;
+        const containerHeight = container.height - 80; // Padding adjustment
+        const containerWidth = container.width - 40;
 
         if (contentHeight > 0 && contentWidth > 0) {
           const scaleH = containerHeight / contentHeight;
           const scaleW = containerWidth / contentWidth;
-          // Use the smaller scale to fit both dimensions, capped at 1 (no upscaling beyond 100% usually, or maybe allow minor upscaling? User said "Auto-fit", usually means shrink to fit OR grow to fit. Let's allow shrinking and slight growth, or just cap at 1 to match seat size expectations). 
-          // Let's cap at 1.0 to render seats at intended 80px, but shrink if needed.
-          // Actually, user wants to see "3 arrays". If screen is huge, 1.0 is fine. If small, shrink.
-          // Let's allow up to 1.0.
-          const newScale = Math.min(1, Math.min(scaleH, scaleW));
+          // Apply 0.95 safety factor
+          const newScale = Math.min(1, Math.min(scaleH, scaleW)) * 0.95;
           setScale(newScale);
         }
       }
@@ -289,9 +286,9 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
                   {renderTableCluster(SEATS_ROOM_35.slice(0, 6), SEATS_ROOM_35.slice(6, 12))}
                 </div>
 
-                {/* Row 2: 11 seats (Indices 12-22) - 6 top, 5 bottom */}
+                {/* Row 2: 11 seats (Indices 12-22) - 6 top, 5 bottom (Align Right) */}
                 <div className="flex items-center justify-center">
-                  {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23))}
+                  {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23), true)}
                 </div>
 
                 {/* Row 3: 12 seats (Indices 23-34) - 6 top, 6 bottom */}
