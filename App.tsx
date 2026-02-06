@@ -154,7 +154,16 @@ const App: React.FC = () => {
       const canvas = await html2canvas(input, {
         scale: 2,
         useCORS: true,
-        logging: false
+        logging: false,
+        windowWidth: input.scrollWidth + 50, // Ensure full width is captured
+        windowHeight: input.scrollHeight + 50,
+        onclone: (document) => {
+          // Optional: Fix styles specifically for PDF export
+          const element = document.getElementById('floor-plan-container');
+          if (element) {
+            element.style.padding = '20px'; // Ensure padding in snapshot
+          }
+        }
       });
 
       const imgData = canvas.toDataURL('image/png');
