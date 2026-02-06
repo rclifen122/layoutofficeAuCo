@@ -286,10 +286,17 @@ const App: React.FC = () => {
             <RefreshCcw size={16} /> Reset
           </button>
           <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 px-4 py-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-md transition-colors text-sm font-semibold"
+            title="Sử dụng tính năng in của trình duyệt để có chất lượng tốt nhất (Save as PDF)"
+          >
+            <Download size={16} /> In PDF (Vector)
+          </button>
+          <button
             onClick={handleExportPDF}
             className="flex items-center gap-2 px-4 py-2 text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors text-sm font-semibold"
           >
-            <Download size={16} /> Xuất PDF
+            <Download size={16} /> Xuất Ảnh (PNG)
           </button>
           <button
             onClick={() => {

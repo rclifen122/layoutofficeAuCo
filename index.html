@@ -58,6 +58,58 @@
       overflow: auto !important;
       background: white;
     }
+
+    /* Print Styles for "Native PDF" */
+    @media print {
+      @page {
+        size: landscape;
+        margin: 0;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: white;
+        overflow: visible !important;
+      }
+
+      /* Hide all UI elements */
+      header,
+      aside,
+      .bg-gray-200,
+      /* The gray wrapper background */
+      button,
+      .fixed,
+      /* Toasts */
+      nav {
+        display: none !important;
+      }
+
+      /* Reset the main map container */
+      #floor-plan-container {
+        display: block !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        transform: scale(1) !important;
+        /* Ensure no scale transform interferes */
+        overflow: visible !important;
+      }
+
+      /* Improve Graphics Quality */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
   </style>
   <link rel="stylesheet" href="/index.css">
 </head>

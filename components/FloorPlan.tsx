@@ -216,7 +216,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         </div>
 
         {/* Middle: Room 12 People */}
-        <div className="flex-[0.22] border-b-4 border-gray-800 p-2 relative bg-gray-50 flex flex-col justify-between flex-shrink-0 min-h-[220px]">
+        <div className="flex-[0.22] border-b-4 border-gray-800 p-2 relative bg-gray-50 flex flex-col justify-between flex-shrink-0">
           <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
             PHÒNG 12 NGƯỜI
           </div>
@@ -249,7 +249,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         {/* Bottom: Room 35 People (Auto-FIT) */}
         <div
           ref={room35ContainerRef}
-          className="flex-[0.65] p-6 relative bg-white flex flex-col min-h-[850px]"
+          className="flex-[0.65] p-6 relative bg-white flex flex-col"
         >
           <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
             PHÒNG 35 NGƯỜI
