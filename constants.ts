@@ -33,7 +33,10 @@ const RAW_EMPLOYEES = [
   { name: "LÊ VĂN LỘC", role: "OS" },
   { name: "NGUYỄN THÀNH NGUYÊN", role: "OS" },
   { name: "TRẦN THANH KIM", role: "OS" },
-  { name: "TRẦN BẢO", role: "OS" }
+  { name: "TRẦN BẢO", role: "OS" },
+  { name: "TRẦN HOÀNG HOÀI NAM", role: "Matching" },
+  { name: "NGUYỄN THỊ NGUYỆT QUỲNH", role: "Matching" },
+  { name: "BÙI THANH YÊN", role: "Matching" }
 ];
 
 export const MOCK_EMPLOYEES: Employee[] = RAW_EMPLOYEES.map((e, i) => ({

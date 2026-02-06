@@ -161,35 +161,13 @@ const App: React.FC = () => {
 
       const pdf = new jsPDF({
         orientation: 'landscape',
-        unit: 'mm',
-        format: 'a2'
+        unit: 'px',
+        format: [canvas.width, canvas.height]
       });
 
-      // A2 Landscape size is 594mm x 420mm
-      const pageWidth = 594;
-      const pageHeight = 420;
-
-      const canvasRatio = canvas.width / canvas.height;
-      const pageRatio = pageWidth / pageHeight;
-
-      let renderWidth = pageWidth;
-      let renderHeight = pageHeight;
-
-      if (canvasRatio > pageRatio) {
-        // Canvas is wider than page -> fit to width
-        renderHeight = pageWidth / canvasRatio;
-      } else {
-        // Canvas is taller than page -> fit to height
-        renderWidth = pageHeight * canvasRatio;
-      }
-
-      // Center the image
-      const x = (pageWidth - renderWidth) / 2;
-      const y = (pageHeight - renderHeight) / 2;
-
-      pdf.addImage(imgData, 'PNG', x, y, renderWidth, renderHeight);
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
       pdf.save(`so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.pdf`);
-      showNotification('Đã xuất PDF thành công (Khổ A2)!', 'success');
+      showNotification('Đã xuất PDF thành công!', 'success');
     } catch (err) {
       console.error(err);
       showNotification('Lỗi khi xuất PDF', 'error');
@@ -236,6 +214,24 @@ const App: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2 text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors text-sm font-semibold"
           >
             <Download size={16} /> Xuất PDF
+          </button>
+          <button
+            onClick={() => {
+              const elem = document.getElementById('floor-plan-container');
+              if (elem) {
+                if (!document.fullscreenElement) {
+                  elem.requestFullscreen().catch(err => {
+                    showNotification(`Lỗi full screen: ${err.message}`, 'error');
+                  });
+                } else {
+                  document.exitFullscreen();
+                }
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-md transition-colors text-sm font-semibold"
+            title="Toàn màn hình"
+          >
+            <Maximize2 size={16} />
           </button>
           <button
             className="flex items-center gap-2 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow transition-colors text-sm font-semibold"
