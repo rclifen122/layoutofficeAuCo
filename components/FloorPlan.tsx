@@ -2,7 +2,7 @@ import React from 'react';
 import { Seat as SeatType, Employee, Assignment, Seat } from '../types';
 import SeatComponent from './Seat';
 import { SEATS_ROOM_12, SEATS_ROOM_35 } from '../constants';
-import { Layers, Coffee, DoorOpen, ArrowUpCircle, Archive } from 'lucide-react';
+import { Layers, Coffee, DoorOpen, ArrowUpCircle, Archive, Armchair } from 'lucide-react';
 
 interface FloorPlanProps {
   assignments: Assignment[];
@@ -25,7 +25,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
     return employees.find(e => e.id === assignment.employeeId);
   };
 
-  const renderSeat = (seat: SeatType) => (
+  const renderSeat = (seat: SeatType, className: string = "") => (
     <SeatComponent
       key={seat.id}
       seat={seat}
@@ -34,22 +34,61 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
       onSelect={() => onSeatClick(seat.id)}
       onDrop={onDrop}
       isTargetCandidate={!!selectedEmployeeId && !getEmployeeForSeat(seat.id)}
+      className={className}
     />
   );
 
   // Helper to render a separator line
   const renderSeparator = () => (
-    <div className="h-full w-px border-r border-dashed border-gray-300 mx-3"></div>
+    <div className="h-full w-8 flex items-center justify-center"></div>
   );
 
-  // Helper to render a cluster of seats with minimal gap
+  // Helper to render a cluster of seats with minimal gap (Old style for Room 12)
   const renderCluster = (topSeats: SeatType[], bottomSeats: SeatType[]) => (
     <div className="flex flex-col items-center gap-0.5">
       <div className="flex gap-0.5 justify-center w-full">
-        {topSeats.map(renderSeat)}
+        {topSeats.map(s => renderSeat(s))}
       </div>
       <div className="flex gap-0.5 justify-center w-full">
-        {bottomSeats.map(renderSeat)}
+        {bottomSeats.map(s => renderSeat(s))}
+      </div>
+    </div>
+  );
+
+  // Helper to render a TABLE cluster (New style for Room 35)
+  // Connected seats, thick border, chair icons outside
+  const renderTableCluster = (topSeats: SeatType[], bottomSeats: SeatType[]) => (
+    <div className="flex flex-col items-center gap-1">
+      {/* Top Chairs */}
+      <div className="flex justify-center w-full gap-0">
+        {topSeats.map(s => (
+          <div key={`chair-top-${s.id}`} className="w-20 flex justify-center">
+            <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mb-1">
+              <Armchair size={14} className="rotate-180" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table Block */}
+      <div className="flex flex-col border-4 border-gray-300 bg-white">
+        <div className="flex w-full">
+          {topSeats.map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
+        </div>
+        <div className="flex w-full">
+          {bottomSeats.map(s => renderSeat(s, "rounded-none border-gray-300 border-t-0 border-r-0 last:border-r hover:z-10"))}
+        </div>
+      </div>
+
+      {/* Bottom Chairs */}
+      <div className="flex justify-center w-full gap-0">
+        {bottomSeats.map(s => (
+          <div key={`chair-bot-${s.id}`} className="w-20 flex justify-center">
+            <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mt-1">
+              <Armchair size={14} />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -91,7 +130,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
 
             {/* Row 1: Top Wall - 6 seats (Tight gap) */}
             <div className="flex justify-center gap-0.5 mt-2">
-              {SEATS_ROOM_12.slice(0, 6).map(renderSeat)}
+              {SEATS_ROOM_12.slice(0, 6).map(s => renderSeat(s))}
             </div>
 
             {/* Empty Center Space */}
@@ -101,7 +140,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
 
             {/* Row 2: Bottom Wall - 6 seats (Tight gap) */}
             <div className="flex justify-center gap-0.5 mb-2">
-              {SEATS_ROOM_12.slice(6, 12).map(renderSeat)}
+              {SEATS_ROOM_12.slice(6, 12).map(s => renderSeat(s))}
             </div>
 
             {/* Columns */}
@@ -109,8 +148,8 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
             <div className="w-6 h-6 bg-black absolute bottom-0 right-0"></div>
           </div>
 
-          {/* Bottom: Room 35 People */}
-          <div className="flex-[0.45] p-6 relative bg-white flex flex-col justify-between">
+          {/* Bottom: Room 35 People (NEW TABLE LAYOUT) */}
+          <div className="flex-[0.45] p-6 relative bg-white flex flex-col justify-between overflow-hidden">
             <h3 className="absolute top-0 right-0 bg-gray-200 px-2 py-1 text-xs font-bold border-bl rounded-bl z-10">PHÒNG 35 NGƯỜI</h3>
 
             {/* DOOR: Top Right of this room */}
@@ -136,38 +175,42 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
               <span className="text-[8px] font-bold text-center text-red-500">TỦ</span>
             </div>
 
+            {/* MAIN CONTENT: SCALABLE VIEWBOX OR JUST FLEX */}
+            {/* Using transform scale if width is too wide, or just rely on overflow-auto if necessary. 
+                 But user asked for full size logic. Let's trust flex. */}
+
             {/* Block 1: 12 seats (Indices 0-11) */}
-            <div className="flex items-center justify-center h-full mr-12"> {/* mr-12 to make space for cabinets visual if needed, but actually content centers */}
-              {renderCluster(SEATS_ROOM_35.slice(0, 2), SEATS_ROOM_35.slice(6, 8))}
+            <div className="flex items-center justify-center mr-12 scale-90 origin-center">
+              {renderTableCluster(SEATS_ROOM_35.slice(0, 2), SEATS_ROOM_35.slice(6, 8))}
               {renderSeparator()}
-              {renderCluster(SEATS_ROOM_35.slice(2, 4), SEATS_ROOM_35.slice(8, 10))}
+              {renderTableCluster(SEATS_ROOM_35.slice(2, 4), SEATS_ROOM_35.slice(8, 10))}
               {renderSeparator()}
-              {renderCluster(SEATS_ROOM_35.slice(4, 6), SEATS_ROOM_35.slice(10, 12))}
+              {renderTableCluster(SEATS_ROOM_35.slice(4, 6), SEATS_ROOM_35.slice(10, 12))}
             </div>
 
             {/* Block 2: 11 seats */}
-            <div className="flex items-center justify-center h-full border-t border-b border-gray-100 py-2 my-2 mr-12">
+            <div className="flex items-center justify-center py-2 mr-12 scale-90 origin-center">
               {/* Left Cluster: 3 seats (Top: 12,13 | Bottom: 18) */}
-              {renderCluster(SEATS_ROOM_35.slice(12, 14), SEATS_ROOM_35.slice(18, 19))}
+              {renderTableCluster(SEATS_ROOM_35.slice(12, 14), SEATS_ROOM_35.slice(18, 19))}
 
               {renderSeparator()}
 
               {/* Middle Cluster: 4 seats (Top: 14,15 | Bottom: 19,20) */}
-              {renderCluster(SEATS_ROOM_35.slice(14, 16), SEATS_ROOM_35.slice(19, 21))}
+              {renderTableCluster(SEATS_ROOM_35.slice(14, 16), SEATS_ROOM_35.slice(19, 21))}
 
               {renderSeparator()}
 
               {/* Right Cluster: 4 seats (Top: 16,17 | Bottom: 21,22) */}
-              {renderCluster(SEATS_ROOM_35.slice(16, 18), SEATS_ROOM_35.slice(21, 23))}
+              {renderTableCluster(SEATS_ROOM_35.slice(16, 18), SEATS_ROOM_35.slice(21, 23))}
             </div>
 
             {/* Block 3: 12 seats (Indices 23-34) */}
-            <div className="flex items-center justify-center h-full mr-12">
-              {renderCluster(SEATS_ROOM_35.slice(23, 25), SEATS_ROOM_35.slice(29, 31))}
+            <div className="flex items-center justify-center mr-12 scale-90 origin-center">
+              {renderTableCluster(SEATS_ROOM_35.slice(23, 25), SEATS_ROOM_35.slice(29, 31))}
               {renderSeparator()}
-              {renderCluster(SEATS_ROOM_35.slice(25, 27), SEATS_ROOM_35.slice(31, 33))}
+              {renderTableCluster(SEATS_ROOM_35.slice(25, 27), SEATS_ROOM_35.slice(31, 33))}
               {renderSeparator()}
-              {renderCluster(SEATS_ROOM_35.slice(27, 29), SEATS_ROOM_35.slice(33, 35))}
+              {renderTableCluster(SEATS_ROOM_35.slice(27, 29), SEATS_ROOM_35.slice(33, 35))}
             </div>
 
             {/* Columns */}
