@@ -199,15 +199,15 @@ const App: React.FC = () => {
     }
   };
 
-  const handleExportPDF = async () => {
+  const handleExportImage = async () => {
     const input = document.getElementById('floor-plan-container');
     if (!input) {
-      showNotification('Không tìm thấy sơ đồ để xuất PDF', 'error');
+      showNotification('Không tìm thấy sơ đồ để xuất ảnh', 'error');
       return;
     }
 
     try {
-      showNotification('Đang tạo PDF...', 'success');
+      showNotification('Đang tạo ảnh...', 'success');
 
       // Get actual dimensions
       const rect = input.getBoundingClientRect();
@@ -216,7 +216,7 @@ const App: React.FC = () => {
 
       // Capture full content with proper dimensions
       const canvas = await html2canvas(input, {
-        scale: 2,
+        scale: 2, // High resolution
         useCORS: true,
         logging: false,
         width: scrollWidth,
@@ -231,22 +231,18 @@ const App: React.FC = () => {
 
       const imgData = canvas.toDataURL('image/png');
 
-      // PDF dimensions (divide by scale factor)
-      const pdfWidth = scrollWidth;
-      const pdfHeight = scrollHeight;
+      // Create download link
+      const link = document.createElement('a');
+      link.href = imgData;
+      link.download = `so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      const pdf = new jsPDF({
-        orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
-        unit: 'px',
-        format: [pdfWidth, pdfHeight]
-      });
-
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.pdf`);
-      showNotification('Đã xuất PDF thành công!', 'success');
+      showNotification('Đã lưu ảnh thành công!', 'success');
     } catch (err) {
       console.error(err);
-      showNotification('Lỗi khi xuất PDF', 'error');
+      showNotification('Lỗi khi xuất ảnh', 'error');
     }
   };
 
@@ -293,7 +289,7 @@ const App: React.FC = () => {
             <Download size={16} /> In PDF (Vector)
           </button>
           <button
-            onClick={handleExportPDF}
+            onClick={handleExportImage}
             className="flex items-center gap-2 px-4 py-2 text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors text-sm font-semibold"
           >
             <Download size={16} /> Xuất Ảnh (PNG)
