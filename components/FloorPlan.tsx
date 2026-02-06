@@ -140,6 +140,59 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
     </div>
   );
 
+  // State for dynamic scaling of Room 35
+  const [scale, setScale] = React.useState(1);
+  const room35ContainerRef = React.useRef<HTMLDivElement>(null);
+  const room35ContentRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const calculateScale = () => {
+      if (room35ContainerRef.current && room35ContentRef.current) {
+        const container = room35ContainerRef.current.getBoundingClientRect();
+        // We need the *natural* size of the content. 
+        // If we measure the scaled content, we might get a feedback loop.
+        // Strategy: Use scrollHeight/scrollWidth or temporarily reset scale?
+        // Better: The content ref should be an inner wrapper that has intrinsic size.
+        // We'll use offsetHeight/offsetWidth of the content element, assuming it's not constrained by the container.
+        const contentHeight = room35ContentRef.current.scrollHeight;
+        const contentWidth = room35ContentRef.current.scrollWidth;
+
+        const containerHeight = container.height - 48; // Padding adjustment
+        const containerWidth = container.width - 48;
+
+        if (contentHeight > 0 && contentWidth > 0) {
+          const scaleH = containerHeight / contentHeight;
+          const scaleW = containerWidth / contentWidth;
+          // Use the smaller scale to fit both dimensions, capped at 1 (no upscaling beyond 100% usually, or maybe allow minor upscaling? User said "Auto-fit", usually means shrink to fit OR grow to fit. Let's allow shrinking and slight growth, or just cap at 1 to match seat size expectations). 
+          // Let's cap at 1.0 to render seats at intended 80px, but shrink if needed.
+          // Actually, user wants to see "3 arrays". If screen is huge, 1.0 is fine. If small, shrink.
+          // Let's allow up to 1.0.
+          const newScale = Math.min(1, Math.min(scaleH, scaleW));
+          setScale(newScale);
+        }
+      }
+    };
+
+    // Observer for container resize
+    const observer = new ResizeObserver(calculateScale);
+    if (room35ContainerRef.current) {
+      observer.observe(room35ContainerRef.current);
+    }
+
+    // Also recalculate on window resize just in case
+    window.addEventListener('resize', calculateScale);
+
+    // Initial calculation
+    calculateScale();
+    // Re-calculate after a brief delay to ensure DOM is settled
+    setTimeout(calculateScale, 100);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', calculateScale);
+    };
+  }, [assignments]); // Recalculate if assignments change (though layout is static)
+
   return (
     <div className="relative w-full h-full bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-300 text-gray-700 select-none">
       {/* Grid Container for Layout with Corridor */}
@@ -188,8 +241,11 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
             <div className="w-6 h-6 bg-black absolute bottom-0 right-0"></div>
           </div>
 
-          {/* Bottom: Room 35 People (NEW TABLE LAYOUT) */}
-          <div className="flex-[0.65] p-6 relative bg-white flex flex-col justify-between overflow-hidden">
+          {/* Bottom: Room 35 People (Auto-FIT) */}
+          <div
+            ref={room35ContainerRef}
+            className="flex-[0.65] p-6 relative bg-white flex flex-col overflow-hidden"
+          >
             <h3 className="absolute top-0 right-0 bg-gray-200 px-2 py-1 text-xs font-bold border-bl rounded-bl z-10">PHÒNG 35 NGƯỜI</h3>
 
             {/* DOOR: Top Right of this room */}
@@ -215,21 +271,33 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
               <span className="text-[8px] font-bold text-center text-red-500">TỦ</span>
             </div>
 
-            {/* MAIN CONTENT CONTAINER with SCALE */}
-            <div className="w-full h-full flex flex-col justify-around scale-75 origin-center mr-8">
-              {/* Row 1: 12 seats (Indices 0-11) - 6 top, 6 bottom */}
-              <div className="flex items-center justify-center">
-                {renderTableCluster(SEATS_ROOM_35.slice(0, 6), SEATS_ROOM_35.slice(6, 12))}
-              </div>
+            {/* MAIN CONTENT CONTAINER with Auto-Scale */}
+            <div
+              className="flex-1 flex items-center justify-center overflow-hidden" // Center the scaled content
+            >
+              <div
+                ref={room35ContentRef}
+                style={{
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'center center',
+                  transition: 'transform 0.2s ease-out'
+                }}
+                className="flex flex-col items-center gap-8 py-4 px-8" // Add padding/gap to ensure intrinsic size is correct
+              >
+                {/* Row 1: 12 seats (Indices 0-11) - 6 top, 6 bottom */}
+                <div className="flex items-center justify-center">
+                  {renderTableCluster(SEATS_ROOM_35.slice(0, 6), SEATS_ROOM_35.slice(6, 12))}
+                </div>
 
-              {/* Row 2: 11 seats (Indices 12-22) - 6 top, 5 bottom */}
-              <div className="flex items-center justify-center">
-                {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23))}
-              </div>
+                {/* Row 2: 11 seats (Indices 12-22) - 6 top, 5 bottom */}
+                <div className="flex items-center justify-center">
+                  {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23))}
+                </div>
 
-              {/* Row 3: 12 seats (Indices 23-34) - 6 top, 6 bottom */}
-              <div className="flex items-center justify-center">
-                {renderTableCluster(SEATS_ROOM_35.slice(23, 29), SEATS_ROOM_35.slice(29, 35))}
+                {/* Row 3: 12 seats (Indices 23-34) - 6 top, 6 bottom */}
+                <div className="flex items-center justify-center">
+                  {renderTableCluster(SEATS_ROOM_35.slice(23, 29), SEATS_ROOM_35.slice(29, 35))}
+                </div>
               </div>
             </div>
 
