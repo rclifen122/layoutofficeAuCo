@@ -65,14 +65,14 @@ const Seat: React.FC<SeatProps> = ({ seat, assignedEmployee, isSelected, onSelec
             );
           })()}
         </div>
+
+      ) : (
+        <div className="text-gray-300 flex items-center justify-center h-full w-full relative">
+          <div className="text-[9px] font-bold text-gray-400 absolute top-0 left-0.5">{seat.label}</div>
+          {isTargetCandidate ? <Plus size={16} className="text-green-500" /> : <div className="w-3 h-3 border rounded-sm border-gray-200" />}
         </div>
-  ) : (
-    <div className="text-gray-300 flex items-center justify-center h-full w-full relative">
-      <div className="text-[9px] font-bold text-gray-400 absolute top-0 left-0.5">{seat.label}</div>
-      {isTargetCandidate ? <Plus size={16} className="text-green-500" /> : <div className="w-3 h-3 border rounded-sm border-gray-200" />}
-    </div>
-  )
-}
+      )
+      }
     </div >
   );
 };
