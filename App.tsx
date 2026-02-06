@@ -256,7 +256,7 @@ const App: React.FC = () => {
 
         {/* Map Area */}
         <div className="flex-1 bg-gray-200 p-8 overflow-auto flex justify-center relative">
-          <div id="floor-plan-container" className="w-full max-w-5xl h-[800px] bg-white shadow-xl">
+          <div id="floor-plan-container" className="w-full max-w-5xl min-h-[1200px] h-auto bg-white shadow-xl">
             <FloorPlan
               assignments={assignments}
               employees={employees}

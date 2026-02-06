@@ -197,10 +197,10 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
   const appliedScale = autoScale * userZoom;
 
   return (
-    <div className="relative w-full h-full bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-300 text-gray-700 select-none flex flex-row">
+    <div className="relative w-full h-full min-h-[1200px] bg-white shadow-2xl rounded-sm border border-gray-300 text-gray-700 select-none flex flex-row">
 
       {/* === LEFT COLUMN (Workspaces) === */}
-      <div className="flex-[3] flex flex-col border-r-2 border-gray-400 min-w-0 h-full overflow-hidden">
+      <div className="flex-[3] flex flex-col border-r-2 border-gray-400 min-w-0 h-full">
 
         {/* Top: Lớp học hiện trạng (Classroom) */}
         <div className="flex-[0.15] bg-hatch border-b-4 border-gray-800 relative p-4 flex-shrink-0">
@@ -216,7 +216,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         </div>
 
         {/* Middle: Room 12 People */}
-        <div className="flex-[0.2] border-b-4 border-gray-800 p-2 relative bg-gray-50 flex flex-col justify-between flex-shrink-0 overflow-hidden">
+        <div className="flex-[0.22] border-b-4 border-gray-800 p-2 relative bg-gray-50 flex flex-col justify-between flex-shrink-0 min-h-[220px]">
           <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
             PHÒNG 12 NGƯỜI
           </div>
@@ -249,7 +249,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         {/* Bottom: Room 35 People (Auto-FIT) */}
         <div
           ref={room35ContainerRef}
-          className="flex-[0.65] p-6 relative bg-white flex flex-col overflow-hidden min-h-0"
+          className="flex-[0.65] p-6 relative bg-white flex flex-col min-h-[650px]"
         >
           <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
             PHÒNG 35 NGƯỜI
@@ -293,7 +293,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
 
           {/* MAIN CONTENT CONTAINER with Auto-Scale */}
           <div
-            className="flex-1 flex items-center justify-center overflow-hidden w-full h-full"
+            className="flex-1 flex items-center justify-center w-full h-full"
           >
             <div
               ref={room35ContentRef}
@@ -337,7 +337,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
       </div>
 
       {/* === RIGHT COLUMN (Utilities) === */}
-      <div className="flex-[1.5] flex flex-col bg-gray-100 min-w-0 h-full overflow-hidden">
+      <div className="flex-[1.5] flex flex-col bg-gray-100 min-w-0 h-full">
 
         {/* Top: Storage & Stairs */}
         <div className="h-64 border-b-2 border-gray-400 p-4 relative flex-shrink-0">
