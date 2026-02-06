@@ -57,7 +57,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
 
   // Helper to render a TABLE cluster (New style for Room 35)
   // Connected seats, thick border, chair icons outside
-  const renderTableCluster = (topSeats: SeatType[], bottomSeats: SeatType[]) => (
+  const renderTableCluster = (topSeats: SeatType[], bottomSeats: SeatType[], bottomAlignRight: boolean = false) => (
     <div className="flex flex-col items-center gap-1">
       {/* Top Chairs */}
       <div className="flex justify-center w-full gap-0">
@@ -75,13 +75,13 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         <div className="flex w-full">
           {topSeats.map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
         </div>
-        <div className="flex w-full">
+        <div className={`flex w-full ${bottomAlignRight ? 'justify-end' : ''}`}>
           {bottomSeats.map(s => renderSeat(s, "rounded-none border-gray-300 border-t-0 border-r-0 last:border-r hover:z-10"))}
         </div>
       </div>
 
       {/* Bottom Chairs */}
-      <div className="flex justify-center w-full gap-0">
+      <div className={`flex w-full gap-0 ${bottomAlignRight ? 'justify-end' : 'justify-center'}`}>
         {bottomSeats.map(s => (
           <div key={`chair-bot-${s.id}`} className="w-20 flex justify-center">
             <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mt-1">
