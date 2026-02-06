@@ -197,7 +197,6 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
   const appliedScale = autoScale * userZoom;
 
   return (
-  return (
     <div className="relative w-full h-full bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-300 text-gray-700 select-none flex flex-row">
 
       {/* === LEFT COLUMN (Workspaces) === */}
