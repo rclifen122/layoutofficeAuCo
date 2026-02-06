@@ -197,33 +197,35 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
   const appliedScale = autoScale * userZoom;
 
   return (
-    <div className="relative w-full h-full bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-300 text-gray-700 select-none">
-      {/* Grid Container for Layout with Corridor */}
-      <div className="grid grid-cols-12 h-full">
+  return (
+    <div className="relative w-full h-full bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-300 text-gray-700 select-none flex flex-row">
 
-        {/* === LEFT COLUMN (Workspaces) === Span 7 of 12 */}
-        <div className="col-span-7 flex flex-col border-r-2 border-gray-400">
+      {/* === LEFT COLUMN (Workspaces) === */}
+      <div className="flex-[3] flex flex-col border-r-2 border-gray-400 min-w-0 h-full overflow-hidden">
 
-          {/* Top: Lớp học hiện trạng (Classroom) */}
-          <div className="flex-[0.15] bg-hatch border-b-4 border-gray-800 relative p-4">
-            <div className="absolute top-2 right-2 border-2 border-dashed border-gray-500 p-2 rounded transform rotate-12">
-              <span className="text-2xl font-black text-gray-400 uppercase opacity-50 block">Lớp học</span>
-              <span className="text-sm font-bold text-gray-400 block opacity-50">Hiện trạng</span>
-            </div>
-            {/* Columns */}
-            <div className="w-10 h-10 bg-black absolute top-10 left-10"></div>
-            <div className="w-10 h-10 bg-black absolute top-10 right-32"></div>
-            <div className="w-10 h-10 bg-black absolute bottom-0 left-10"></div>
-            <div className="w-10 h-10 bg-black absolute bottom-0 right-32"></div>
+        {/* Top: Lớp học hiện trạng (Classroom) */}
+        <div className="flex-[0.15] bg-hatch border-b-4 border-gray-800 relative p-4 flex-shrink-0">
+          <div className="absolute top-2 right-2 border-2 border-dashed border-gray-500 p-2 rounded transform rotate-12 bg-white/80 z-10">
+            <span className="text-xl font-black text-gray-500 uppercase block">Lớp học</span>
+            <span className="text-xs font-bold text-gray-400 block text-right">Hiện trạng</span>
+          </div>
+          {/* Columns */}
+          <div className="w-10 h-10 bg-black absolute top-10 left-10"></div>
+          <div className="w-10 h-10 bg-black absolute top-10 right-32"></div>
+          <div className="w-10 h-10 bg-black absolute bottom-0 left-10"></div>
+          <div className="w-10 h-10 bg-black absolute bottom-0 right-32"></div>
+        </div>
+
+        {/* Middle: Room 12 People */}
+        <div className="flex-[0.2] border-b-4 border-gray-800 p-2 relative bg-gray-50 flex flex-col justify-between flex-shrink-0 overflow-hidden">
+          <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
+            PHÒNG 12 NGƯỜI
           </div>
 
-          {/* Middle: Room 12 People */}
-          <div className="flex-[0.2] border-b-4 border-gray-800 p-4 relative bg-gray-50 flex flex-col justify-between">
-            <h3 className="absolute top-0 right-0 bg-gray-200 px-2 py-1 text-xs font-bold border-bl rounded-bl z-10">PHÒNG 12 NGƯỜI</h3>
+          {/* DOOR: Bottom Right of this room */}
+          {renderDoor("right-0 top-8 w-1.5 h-12 translate-x-[2px]")}
 
-            {/* DOOR: Bottom Right of this room */}
-            {renderDoor("right-0 top-8 w-1.5 h-12 translate-x-[2px]")}
-
+          <div className="flex flex-col h-full justify-between py-2">
             {/* Row 1: Top Wall - 6 seats (Connected against wall) */}
             <div className="flex justify-center scale-90 origin-top">
               {renderWallTableTop(SEATS_ROOM_12.slice(0, 6))}
@@ -238,189 +240,192 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
             <div className="flex justify-center scale-90 origin-bottom">
               {renderWallTableBottom(SEATS_ROOM_12.slice(6, 12))}
             </div>
-
-            {/* Columns */}
-            <div className="w-6 h-6 bg-black absolute bottom-0 left-0"></div>
-            <div className="w-6 h-6 bg-black absolute bottom-0 right-0"></div>
           </div>
 
-          {/* Bottom: Room 35 People (Auto-FIT) */}
+          {/* Columns */}
+          <div className="w-5 h-5 bg-black absolute bottom-0 left-0"></div>
+          <div className="w-5 h-5 bg-black absolute bottom-0 right-0"></div>
+        </div>
+
+        {/* Bottom: Room 35 People (Auto-FIT) */}
+        <div
+          ref={room35ContainerRef}
+          className="flex-[0.65] p-6 relative bg-white flex flex-col overflow-hidden min-h-0"
+        >
+          <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
+            PHÒNG 35 NGƯỜI
+          </div>
+
+          {/* Zoom Controls */}
+          <div className="absolute bottom-4 left-4 z-50 flex flex-col gap-2 opacity-50 hover:opacity-100 transition-opacity">
+            <div className="flex gap-1">
+              <button onClick={handleZoomIn} className="w-8 h-8 bg-gray-800 text-white rounded flex items-center justify-center font-bold shadow hover:bg-black" title="Zoom In">+</button>
+              <button onClick={handleZoomOut} className="w-8 h-8 bg-gray-800 text-white rounded flex items-center justify-center font-bold shadow hover:bg-black" title="Zoom Out">-</button>
+            </div>
+            <button onClick={handleResetZoom} className="px-2 py-1 bg-gray-200 text-xs font-bold rounded shadow hover:bg-gray-300" title="Reset Zoom">Auto-Fit</button>
+            {/* Debug Info */}
+            <div className="text-[10px] text-gray-400 font-mono">
+              Scale: {(appliedScale * 100).toFixed(0)}%
+            </div>
+          </div>
+
+          {/* DOOR: Top Right of this room */}
+          {renderDoor("right-0 top-12 w-1.5 h-12 translate-x-[2px]")}
+
+          {/* CABINETS: Bottom Right (3 stacked) */}
+          <div className="absolute bottom-6 right-0 flex flex-col gap-0.5 z-10 transition-transform origin-right" style={{ transform: `scale(${Math.min(1, appliedScale + 0.2)})` }}>
+            <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
+              <div className="w-full h-0.5 bg-gray-400"></div>
+              <div className="w-full h-0.5 bg-gray-400"></div>
+              <div className="w-full h-0.5 bg-gray-400"></div>
+            </div>
+            <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
+              <div className="w-full h-0.5 bg-gray-400"></div>
+              <div className="w-full h-0.5 bg-gray-400"></div>
+              <div className="w-full h-0.5 bg-gray-400"></div>
+            </div>
+            <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
+              <div className="w-full h-0.5 bg-gray-400"></div>
+              <div className="w-full h-0.5 bg-gray-400"></div>
+              <div className="w-full h-0.5 bg-gray-400"></div>
+            </div>
+            <span className="text-[8px] font-bold text-center text-red-500">TỦ</span>
+          </div>
+
+          {/* MAIN CONTENT CONTAINER with Auto-Scale */}
           <div
-            ref={room35ContainerRef}
-            className="flex-[0.65] p-6 relative bg-white flex flex-col overflow-hidden"
+            className="flex-1 flex items-center justify-center overflow-hidden w-full h-full"
           >
-            <h3 className="absolute top-0 right-0 bg-gray-200 px-2 py-1 text-xs font-bold border-bl rounded-bl z-10">PHÒNG 35 NGƯỜI</h3>
-
-            {/* Zoom Controls */}
-            <div className="absolute bottom-4 left-4 z-50 flex flex-col gap-2 opacity-50 hover:opacity-100 transition-opacity">
-              <div className="flex gap-1">
-                <button onClick={handleZoomIn} className="w-8 h-8 bg-gray-800 text-white rounded flex items-center justify-center font-bold shadow hover:bg-black" title="Zoom In">+</button>
-                <button onClick={handleZoomOut} className="w-8 h-8 bg-gray-800 text-white rounded flex items-center justify-center font-bold shadow hover:bg-black" title="Zoom Out">-</button>
-              </div>
-              <button onClick={handleResetZoom} className="px-2 py-1 bg-gray-200 text-xs font-bold rounded shadow hover:bg-gray-300" title="Reset Zoom">Auto-Fit</button>
-              {/* Debug Info (Optional, minimal) */}
-              <div className="text-[10px] text-gray-400 font-mono">
-                Scale: {(appliedScale * 100).toFixed(0)}%
-              </div>
-            </div>
-
-            {/* DOOR: Top Right of this room */}
-            {renderDoor("right-0 top-12 w-1.5 h-12 translate-x-[2px]")}
-
-            {/* CABINETS: Bottom Right (3 stacked) */}
-            <div className="absolute bottom-6 right-0 flex flex-col gap-0.5 z-10">
-              <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
-                <div className="w-full h-0.5 bg-gray-400"></div>
-                <div className="w-full h-0.5 bg-gray-400"></div>
-                <div className="w-full h-0.5 bg-gray-400"></div>
-              </div>
-              <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
-                <div className="w-full h-0.5 bg-gray-400"></div>
-                <div className="w-full h-0.5 bg-gray-400"></div>
-                <div className="w-full h-0.5 bg-gray-400"></div>
-              </div>
-              <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
-                <div className="w-full h-0.5 bg-gray-400"></div>
-                <div className="w-full h-0.5 bg-gray-400"></div>
-                <div className="w-full h-0.5 bg-gray-400"></div>
-              </div>
-              <span className="text-[8px] font-bold text-center text-red-500">TỦ</span>
-            </div>
-
-            {/* MAIN CONTENT CONTAINER with Auto-Scale */}
             <div
-              className="flex-1 flex items-center justify-center overflow-hidden" // Center the scaled content
+              ref={room35ContentRef}
+              style={{
+                transform: `scale(${appliedScale})`,
+                transformOrigin: 'center center',
+                transition: 'transform 0.2s ease-out'
+              }}
+              className="flex flex-col items-center gap-12 py-8 px-8" // Use gap-12 as requested
             >
-              <div
-                ref={room35ContentRef}
-                style={{
-                  transform: `scale(${appliedScale})`,
-                  transformOrigin: 'center center',
-                  transition: 'transform 0.2s ease-out'
-                }}
-                className="flex flex-col items-center gap-14 py-8 px-8" // INCREASED GAP to 14 (56px)
-              >
-                {/* Row 1: 12 seats (Indices 0-11) - 6 top, 6 bottom */}
-                <div className="flex items-center justify-center">
-                  {renderTableCluster(SEATS_ROOM_35.slice(0, 6), SEATS_ROOM_35.slice(6, 12))}
-                </div>
-
-                {/* Row 2: 11 seats (Indices 12-22) - 6 top, 5 bottom (Align Right) */}
-                <div className="flex items-center justify-center w-full"> {/* Ensure full width for alignment */}
-                  {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23), true)}
-                </div>
-
-                {/* Row 3: 12 seats (Indices 23-34) - 6 top, 6 bottom */}
-                <div className="flex items-center justify-center">
-                  {renderTableCluster(SEATS_ROOM_35.slice(23, 29), SEATS_ROOM_35.slice(29, 35))}
-                </div>
+              {/* Row 1 */}
+              <div className="flex items-center justify-center">
+                {renderTableCluster(SEATS_ROOM_35.slice(0, 6), SEATS_ROOM_35.slice(6, 12))}
               </div>
-            </div>
 
-            {/* Columns */}
-            <div className="w-6 h-6 bg-black absolute top-0 left-0"></div>
-            <div className="w-6 h-6 bg-black absolute top-0 right-0"></div>
-            <div className="w-6 h-6 bg-black absolute bottom-0 left-0"></div>
-            <div className="w-6 h-6 bg-black absolute bottom-0 right-0"></div>
-          </div>
-
-        </div>
-
-        {/* === CORRIDOR (Hành lang) === Span 1 */}
-        <div className="col-span-1 bg-gray-100 border-r-2 border-gray-400 flex flex-col items-center justify-center relative">
-          <div className="absolute inset-y-0 left-1/2 border-l-2 border-dashed border-gray-300"></div>
-          <span className="text-gray-400 font-bold uppercase rotate-90 tracking-[0.5rem] whitespace-nowrap text-xs select-none">Hành Lang</span>
-        </div>
-
-        {/* === RIGHT COLUMN (Utilities) === Span 4 */}
-        <div className="col-span-4 flex flex-col bg-gray-100">
-
-          {/* Top: Storage & Stairs */}
-          <div className="h-64 border-b-2 border-gray-400 p-4 relative">
-            <div className="border border-gray-400 h-full bg-white flex flex-col p-2">
-              <div className="flex-1 border-b border-gray-300 mb-2 flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                  <div className="text-xs font-bold">KHO</div>
-                </div>
+              {/* Row 2 (Align Right) */}
+              <div className="flex items-center justify-center w-full">
+                {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23), true)}
               </div>
-              <div className="flex-[2] border border-gray-300 relative bg-gray-100">
-                {/* Stairs Graphic */}
-                <div className="absolute inset-2 border border-gray-400">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="h-3 w-full border-b border-gray-300"></div>
-                  ))}
-                </div>
-                <span className="absolute bottom-1 w-full text-center text-[10px] font-bold">THANG BỘ</span>
-              </div>
-              <div className="flex-1 mt-2 border border-gray-300 bg-white flex items-center justify-center">
-                <div className="w-8 h-8 border border-gray-400 flex items-center justify-center">
-                  <ArrowUpCircle size={16} />
-                </div>
+
+              {/* Row 3 */}
+              <div className="flex items-center justify-center">
+                {renderTableCluster(SEATS_ROOM_35.slice(23, 29), SEATS_ROOM_35.slice(29, 35))}
               </div>
             </div>
           </div>
 
-          {/* Middle: Restrooms */}
-          <div className="h-48 border-b-2 border-gray-400 p-2 flex gap-2">
-            <div className="flex-1 bg-white border border-gray-300 flex items-center justify-center relative">
-              <span className="text-xs font-bold rotate-90">WC NAM</span>
-              <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full"></div>
-            </div>
-            <div className="flex-1 bg-white border border-gray-300 flex items-center justify-center relative">
-              <span className="text-xs font-bold rotate-90">WC NỮ</span>
-              <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full"></div>
-            </div>
-          </div>
-
-          {/* Bottom: Meeting Room & Pantry */}
-          <div className="flex-1 flex flex-col relative">
-
-            {/* DOOR: Meeting Room/Pantry Entrance (Left side facing corridor) */}
-            {renderDoor("left-0 top-32 w-1.5 h-12 -translate-x-[2px]")}
-
-            {/* Pantry / Waiting Area */}
-            <div className="flex-1 border-b border-gray-300 p-4 bg-white relative">
-              <div className="absolute top-2 left-2 text-[10px] font-bold">PHÒNG THỰC HÀNH CTO</div>
-              <div className="w-full h-full flex items-center justify-center">
-                <DoorOpen size={32} className="text-gray-400" />
-              </div>
-            </div>
-
-            {/* Meeting Room */}
-            <div className="flex-[2] p-6 bg-white relative">
-              <h3 className="absolute bottom-2 right-2 text-xs font-bold text-gray-500">PHÒNG HỌP</h3>
-
-              {/* Oval Table */}
-              <div className="w-3/4 mx-auto h-32 border-2 border-gray-600 rounded-[50px] bg-gray-50 flex items-center justify-center shadow-sm relative mt-4">
-                <span className="text-xs font-bold text-gray-400">BÀN HỌP</span>
-                {/* Chairs around table */}
-                <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-10"></div>
-                <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-24"></div>
-                <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-36"></div>
-
-                <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-10"></div>
-                <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-24"></div>
-                <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-36"></div>
-
-                <div className="absolute top-10 -left-4 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
-                <div className="absolute top-10 -right-4 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
-              </div>
-            </div>
-
-            {/* Stairs Exit */}
-            <div className="h-20 border-t border-gray-400 relative">
-              <div className="absolute bottom-2 right-2 w-16 h-16 rounded-full border border-gray-400 flex items-center justify-center">
-                <div className="w-full border-t border-gray-400 rotate-45"></div>
-                <div className="w-full border-t border-gray-400 -rotate-45 absolute"></div>
-              </div>
-              <span className="absolute bottom-1 right-20 text-[10px]">THANG THOÁT HIỂM</span>
-            </div>
-
-          </div>
+          {/* Columns */}
+          <div className="w-5 h-5 bg-black absolute top-0 left-0"></div>
+          <div className="w-5 h-5 bg-black absolute top-0 right-0"></div>
+          <div className="w-5 h-5 bg-black absolute bottom-0 left-0"></div>
+          <div className="w-5 h-5 bg-black absolute bottom-0 right-0"></div>
         </div>
 
       </div>
+
+      {/* === CORRIDOR (Hành lang) === */}
+      <div className="w-16 bg-gray-100 border-r-2 border-gray-400 flex flex-col items-center justify-center relative flex-shrink-0 z-10">
+        <div className="absolute inset-y-0 left-1/2 border-l-2 border-dashed border-gray-300"></div>
+        <span className="text-gray-400 font-bold uppercase rotate-90 tracking-[0.5rem] whitespace-nowrap text-xs select-none">Hành Lang</span>
+      </div>
+
+      {/* === RIGHT COLUMN (Utilities) === */}
+      <div className="flex-[1.5] flex flex-col bg-gray-100 min-w-0 h-full overflow-hidden">
+
+        {/* Top: Storage & Stairs */}
+        <div className="h-64 border-b-2 border-gray-400 p-4 relative flex-shrink-0">
+          <div className="border border-gray-400 h-full bg-white flex flex-col p-2">
+            <div className="flex-1 border-b border-gray-300 mb-2 flex items-center justify-center bg-gray-50">
+              <div className="text-center">
+                <div className="text-xs font-bold">KHO</div>
+              </div>
+            </div>
+            <div className="flex-[2] border border-gray-300 relative bg-gray-100">
+              {/* Stairs Graphic */}
+              <div className="absolute inset-2 border border-gray-400">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-3 w-full border-b border-gray-300"></div>
+                ))}
+              </div>
+              <span className="absolute bottom-1 w-full text-center text-[10px] font-bold">THANG BỘ</span>
+            </div>
+            <div className="flex-1 mt-2 border border-gray-300 bg-white flex items-center justify-center">
+              <div className="w-8 h-8 border border-gray-400 flex items-center justify-center">
+                <Archive size={16} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Middle: Restrooms */}
+        <div className="h-48 border-b-2 border-gray-400 p-2 flex gap-2 flex-shrink-0">
+          <div className="flex-1 bg-white border border-gray-300 flex items-center justify-center relative">
+            <span className="text-xs font-bold rotate-90">WC NAM</span>
+            <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full"></div>
+          </div>
+          <div className="flex-1 bg-white border border-gray-300 flex items-center justify-center relative">
+            <span className="text-xs font-bold rotate-90">WC NỮ</span>
+            <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full"></div>
+          </div>
+        </div>
+
+        {/* Bottom: Meeting Room & Pantry */}
+        <div className="flex-1 flex flex-col relative min-h-0 overflow-y-auto">
+
+          {/* DOOR: Meeting Room/Pantry Entrance (Left side facing corridor) */}
+          {renderDoor("left-0 top-32 w-1.5 h-12 -translate-x-[2px]")}
+
+          {/* Pantry / Waiting Area */}
+          <div className="flex-1 border-b border-gray-300 p-4 bg-white relative min-h-[120px]">
+            <div className="absolute top-2 left-2 text-[10px] font-bold z-10">PHÒNG THỰC HÀNH CTO</div>
+            <div className="w-full h-full flex items-center justify-center">
+              <DoorOpen size={32} className="text-gray-400" />
+            </div>
+          </div>
+
+          {/* Meeting Room */}
+          <div className="flex-[2] p-6 bg-white relative min-h-[200px]">
+            <h3 className="absolute bottom-2 right-2 text-xs font-bold text-gray-500">PHÒNG HỌP</h3>
+
+            {/* Oval Table */}
+            <div className="w-3/4 mx-auto h-32 border-2 border-gray-600 rounded-[50px] bg-gray-50 flex items-center justify-center shadow-sm relative mt-4">
+              <span className="text-xs font-bold text-gray-400">BÀN HỌP</span>
+              {/* Chairs around table */}
+              <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-10"></div>
+              <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-24"></div>
+              <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-36"></div>
+
+              <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-10"></div>
+              <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-24"></div>
+              <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-36"></div>
+
+              <div className="absolute top-10 -left-4 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
+              <div className="absolute top-10 -right-4 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
+            </div>
+          </div>
+
+          {/* Stairs Exit */}
+          <div className="h-20 border-t border-gray-400 relative flex-shrink-0">
+            <div className="absolute bottom-2 right-2 w-16 h-16 rounded-full border border-gray-400 flex items-center justify-center">
+              <div className="w-full border-t border-gray-400 rotate-45"></div>
+              <div className="w-full border-t border-gray-400 -rotate-45 absolute"></div>
+            </div>
+            <span className="absolute bottom-1 right-20 text-[10px]">THANG THOÁT HIỂM</span>
+          </div>
+
+        </div>
+      </div>
+
     </div>
+  );
   );
 };
 
