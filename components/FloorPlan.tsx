@@ -149,7 +149,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         <div className="col-span-7 flex flex-col border-r-2 border-gray-400">
 
           {/* Top: Lớp học hiện trạng (Classroom) */}
-          <div className="flex-[0.3] bg-hatch border-b-4 border-gray-800 relative p-4">
+          <div className="flex-[0.15] bg-hatch border-b-4 border-gray-800 relative p-4">
             <div className="absolute top-2 right-2 border-2 border-dashed border-gray-500 p-2 rounded transform rotate-12">
               <span className="text-2xl font-black text-gray-400 uppercase opacity-50 block">Lớp học</span>
               <span className="text-sm font-bold text-gray-400 block opacity-50">Hiện trạng</span>
@@ -162,7 +162,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
           </div>
 
           {/* Middle: Room 12 People */}
-          <div className="flex-[0.25] border-b-4 border-gray-800 p-4 relative bg-gray-50 flex flex-col justify-between">
+          <div className="flex-[0.2] border-b-4 border-gray-800 p-4 relative bg-gray-50 flex flex-col justify-between">
             <h3 className="absolute top-0 right-0 bg-gray-200 px-2 py-1 text-xs font-bold border-bl rounded-bl z-10">PHÒNG 12 NGƯỜI</h3>
 
             {/* DOOR: Bottom Right of this room */}
@@ -189,7 +189,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
           </div>
 
           {/* Bottom: Room 35 People (NEW TABLE LAYOUT) */}
-          <div className="flex-[0.45] p-6 relative bg-white flex flex-col justify-between overflow-hidden">
+          <div className="flex-[0.65] p-6 relative bg-white flex flex-col justify-between overflow-hidden">
             <h3 className="absolute top-0 right-0 bg-gray-200 px-2 py-1 text-xs font-bold border-bl rounded-bl z-10">PHÒNG 35 NGƯỜI</h3>
 
             {/* DOOR: Top Right of this room */}
@@ -215,23 +215,22 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
               <span className="text-[8px] font-bold text-center text-red-500">TỦ</span>
             </div>
 
-            {/* MAIN CONTENT: SCALABLE VIEWBOX OR JUST FLEX */}
-            {/* Using transform scale if width is too wide, or just rely on overflow-auto if necessary. 
-                 But user asked for full size logic. Let's trust flex. */}
+            {/* MAIN CONTENT CONTAINER with SCALE */}
+            <div className="w-full h-full flex flex-col justify-around scale-75 origin-center mr-8">
+              {/* Row 1: 12 seats (Indices 0-11) - 6 top, 6 bottom */}
+              <div className="flex items-center justify-center">
+                {renderTableCluster(SEATS_ROOM_35.slice(0, 6), SEATS_ROOM_35.slice(6, 12))}
+              </div>
 
-            {/* Row 1: 12 seats (Indices 0-11) - 6 top, 6 bottom */}
-            <div className="flex items-center justify-center mr-12 scale-90 origin-center">
-              {renderTableCluster(SEATS_ROOM_35.slice(0, 6), SEATS_ROOM_35.slice(6, 12))}
-            </div>
+              {/* Row 2: 11 seats (Indices 12-22) - 6 top, 5 bottom */}
+              <div className="flex items-center justify-center">
+                {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23))}
+              </div>
 
-            {/* Row 2: 11 seats (Indices 12-22) - 6 top, 5 bottom */}
-            <div className="flex items-center justify-center py-2 mr-12 scale-90 origin-center">
-              {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23))}
-            </div>
-
-            {/* Row 3: 12 seats (Indices 23-34) - 6 top, 6 bottom */}
-            <div className="flex items-center justify-center mr-12 scale-90 origin-center">
-              {renderTableCluster(SEATS_ROOM_35.slice(23, 29), SEATS_ROOM_35.slice(29, 35))}
+              {/* Row 3: 12 seats (Indices 23-34) - 6 top, 6 bottom */}
+              <div className="flex items-center justify-center">
+                {renderTableCluster(SEATS_ROOM_35.slice(23, 29), SEATS_ROOM_35.slice(29, 35))}
+              </div>
             </div>
 
             {/* Columns */}
