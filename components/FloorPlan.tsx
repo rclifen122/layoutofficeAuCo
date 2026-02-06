@@ -141,7 +141,8 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
   );
 
   // State for dynamic scaling of Room 35
-  const [scale, setScale] = React.useState(1);
+  const [autoScale, setAutoScale] = React.useState(1);
+  const [userZoom, setUserZoom] = React.useState(1);
   const room35ContainerRef = React.useRef<HTMLDivElement>(null);
   const room35ContentRef = React.useRef<HTMLDivElement>(null);
 
@@ -149,23 +150,22 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
     const calculateScale = () => {
       if (room35ContainerRef.current && room35ContentRef.current) {
         const container = room35ContainerRef.current.getBoundingClientRect();
-        // We need the *natural* size of the content. 
-        // If we measure the scaled content, we might get a feedback loop.
-        // Strategy: Use scrollHeight/scrollWidth or temporarily reset scale?
-        // Better: The content ref should be an inner wrapper that has intrinsic size.
-        // We'll use offsetHeight/offsetWidth of the content element, assuming it's not constrained by the container.
+        // Measure content *without* scale transform if possible, 
+        // but scrollHeight on the inner element works well if we don't constrain its height.
         const contentHeight = room35ContentRef.current.scrollHeight;
         const contentWidth = room35ContentRef.current.scrollWidth;
 
-        const containerHeight = container.height - 80; // Padding adjustment
+        // Available space
+        const containerHeight = container.height - 60; // Padding adjustment
         const containerWidth = container.width - 40;
 
         if (contentHeight > 0 && contentWidth > 0) {
           const scaleH = containerHeight / contentHeight;
           const scaleW = containerWidth / contentWidth;
-          // Apply 0.95 safety factor
+
+          // Apply safety factor and cap auto-scale at 1 (no auto-upscale)
           const newScale = Math.min(1, Math.min(scaleH, scaleW)) * 0.95;
-          setScale(newScale);
+          setAutoScale(newScale);
         }
       }
     };
@@ -176,19 +176,25 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
       observer.observe(room35ContainerRef.current);
     }
 
-    // Also recalculate on window resize just in case
+    // Also recalculate on window resize
     window.addEventListener('resize', calculateScale);
 
-    // Initial calculation
+    // Initial calculation sequence
     calculateScale();
-    // Re-calculate after a brief delay to ensure DOM is settled
     setTimeout(calculateScale, 100);
+    setTimeout(calculateScale, 500); // Extra safety check
 
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', calculateScale);
     };
-  }, [assignments]); // Recalculate if assignments change (though layout is static)
+  }, [assignments]); // Dependency on assignments is minimal impact
+
+  const handleZoomIn = () => setUserZoom(prev => Math.min(prev + 0.1, 3));
+  const handleZoomOut = () => setUserZoom(prev => Math.max(prev - 0.1, 0.5));
+  const handleResetZoom = () => setUserZoom(1);
+
+  const appliedScale = autoScale * userZoom;
 
   return (
     <div className="relative w-full h-full bg-white shadow-2xl rounded-sm overflow-hidden border border-gray-300 text-gray-700 select-none">
@@ -245,6 +251,19 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
           >
             <h3 className="absolute top-0 right-0 bg-gray-200 px-2 py-1 text-xs font-bold border-bl rounded-bl z-10">PHÒNG 35 NGƯỜI</h3>
 
+            {/* Zoom Controls */}
+            <div className="absolute bottom-4 left-4 z-50 flex flex-col gap-2 opacity-50 hover:opacity-100 transition-opacity">
+              <div className="flex gap-1">
+                <button onClick={handleZoomIn} className="w-8 h-8 bg-gray-800 text-white rounded flex items-center justify-center font-bold shadow hover:bg-black" title="Zoom In">+</button>
+                <button onClick={handleZoomOut} className="w-8 h-8 bg-gray-800 text-white rounded flex items-center justify-center font-bold shadow hover:bg-black" title="Zoom Out">-</button>
+              </div>
+              <button onClick={handleResetZoom} className="px-2 py-1 bg-gray-200 text-xs font-bold rounded shadow hover:bg-gray-300" title="Reset Zoom">Auto-Fit</button>
+              {/* Debug Info (Optional, minimal) */}
+              <div className="text-[10px] text-gray-400 font-mono">
+                Scale: {(appliedScale * 100).toFixed(0)}%
+              </div>
+            </div>
+
             {/* DOOR: Top Right of this room */}
             {renderDoor("right-0 top-12 w-1.5 h-12 translate-x-[2px]")}
 
@@ -275,11 +294,11 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
               <div
                 ref={room35ContentRef}
                 style={{
-                  transform: `scale(${scale})`,
+                  transform: `scale(${appliedScale})`,
                   transformOrigin: 'center center',
                   transition: 'transform 0.2s ease-out'
                 }}
-                className="flex flex-col items-center gap-8 py-4 px-8" // Add padding/gap to ensure intrinsic size is correct
+                className="flex flex-col items-center gap-14 py-8 px-8" // INCREASED GAP to 14 (56px)
               >
                 {/* Row 1: 12 seats (Indices 0-11) - 6 top, 6 bottom */}
                 <div className="flex items-center justify-center">
@@ -287,7 +306,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
                 </div>
 
                 {/* Row 2: 11 seats (Indices 12-22) - 6 top, 5 bottom (Align Right) */}
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center w-full"> {/* Ensure full width for alignment */}
                   {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23), true)}
                 </div>
 
