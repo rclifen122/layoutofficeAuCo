@@ -3,18 +3,19 @@ import { Employee, Seat, Assignment } from "../types";
 
 // Initialize Gemini Client
 // Assumption: process.env.API_KEY is available as per instructions.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Remove top-level client initialization to prevent crash on load if key is missing
+// const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateSmartSeating = async (
   employees: Employee[],
   seats: Seat[],
   currentAssignments: Assignment[]
 ): Promise<Assignment[]> => {
-  
+
   const unassignedEmployees = employees.filter(
     e => !currentAssignments.find(a => a.employeeId === e.id)
   );
-  
+
   const availableSeats = seats.filter(
     s => !currentAssignments.find(a => a.seatId === s.id)
   );
@@ -37,6 +38,7 @@ export const generateSmartSeating = async (
   };
 
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Assign these employees to the available seats based on the rules. \nData: ${JSON.stringify(promptData)}`,
