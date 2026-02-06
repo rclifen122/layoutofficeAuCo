@@ -197,7 +197,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
   const appliedScale = autoScale * userZoom;
 
   return (
-    <div className="relative w-full h-full min-h-[1200px] bg-white shadow-2xl rounded-sm border border-gray-300 text-gray-700 select-none flex flex-row">
+    <div className="relative w-full h-full min-h-[1500px] bg-white shadow-2xl rounded-sm border border-gray-300 text-gray-700 select-none flex flex-row">
 
       {/* === LEFT COLUMN (Workspaces) === */}
       <div className="flex-[3] flex flex-col border-r-2 border-gray-400 min-w-0 h-full">
@@ -249,7 +249,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         {/* Bottom: Room 35 People (Auto-FIT) */}
         <div
           ref={room35ContainerRef}
-          className="flex-[0.65] p-6 relative bg-white flex flex-col min-h-[650px]"
+          className="flex-[0.65] p-6 relative bg-white flex flex-col min-h-[850px]"
         >
           <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
             PHÒNG 35 NGƯỜI

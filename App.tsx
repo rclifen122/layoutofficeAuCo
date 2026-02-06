@@ -208,22 +208,37 @@ const App: React.FC = () => {
 
     try {
       showNotification('Đang tạo PDF...', 'success');
-      // Use higher scale for better quality
+
+      // Get the full scrollable dimensions of the element
+      const fullWidth = input.scrollWidth;
+      const fullHeight = input.scrollHeight;
+
+      // Use higher scale for better quality and capture full content
       const canvas = await html2canvas(input, {
         scale: 2,
         useCORS: true,
-        logging: false
+        logging: false,
+        width: fullWidth,
+        height: fullHeight,
+        windowWidth: fullWidth,
+        windowHeight: fullHeight,
+        scrollX: 0,
+        scrollY: 0
       });
 
       const imgData = canvas.toDataURL('image/png');
 
+      // Calculate dimensions for PDF (scale down for reasonable file size)
+      const pdfWidth = canvas.width / 2;
+      const pdfHeight = canvas.height / 2;
+
       const pdf = new jsPDF({
-        orientation: 'landscape',
+        orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
         unit: 'px',
-        format: [canvas.width, canvas.height]
+        format: [pdfWidth, pdfHeight]
       });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.pdf`);
       showNotification('Đã xuất PDF thành công!', 'success');
     } catch (err) {
