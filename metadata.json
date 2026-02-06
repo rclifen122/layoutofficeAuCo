@@ -1,0 +1,5 @@
+{
+  "name": "Office Seat Planner",
+  "description": "Ứng dụng sắp xếp chỗ ngồi văn phòng thông minh dựa trên sơ đồ mặt bằng thực tế, hỗ trợ AI.",
+  "requestFramePermissions": []
+}
