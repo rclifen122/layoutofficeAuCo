@@ -46,23 +46,34 @@ const Seat: React.FC<SeatProps> = ({ seat, assignedEmployee, isSelected, onSelec
       {assignedEmployee ? (
         <div className="w-full h-full flex items-center justify-center overflow-hidden px-0.5">
           {(() => {
-            const displayText = assignedEmployee.name.split(' ').slice(-2).join(' ');
-            const isLongName = ['MASUDA', 'IMAMACHI', 'KATSUMATA', 'HOSHIYAMA'].some(k => displayText.toUpperCase().includes(k)) || displayText.length > 12;
+            // Use the full name or last 2 words as before, but ensure we allow wrapping
+            const displayText = assignedEmployee.name.toUpperCase();
+            // Simple heuristic: if it's very long, allow wrap with hyphens
+            const isLongName = displayText.length > 10;
 
             return (
-              <span className={`${isLongName ? 'text-[8px] leading-none' : 'text-[10px] leading-3'} font-bold text-center break-words whitespace-normal text-blue-900 select-none`}>
+              <span
+                className={`
+                  ${isLongName ? 'text-[9px] leading-[10px]' : 'text-[10px] leading-3'} 
+                  font-bold text-center text-blue-900 select-none
+                  break-words whitespace-normal hyphens-auto w-full
+                `}
+                style={{ overflowWrap: 'break-word', wordBreak: 'break-word', hyphens: 'auto', WebkitHyphens: 'auto' }}
+              >
                 {displayText}
               </span>
             );
           })()}
         </div>
-      ) : (
-        <div className="text-gray-300 flex items-center justify-center h-full w-full relative">
-          <div className="text-[9px] font-bold text-gray-400 absolute top-0 left-0.5">{seat.label}</div>
-          {isTargetCandidate ? <Plus size={16} className="text-green-500" /> : <div className="w-3 h-3 border rounded-sm border-gray-200" />}
         </div>
-      )}
+  ) : (
+    <div className="text-gray-300 flex items-center justify-center h-full w-full relative">
+      <div className="text-[9px] font-bold text-gray-400 absolute top-0 left-0.5">{seat.label}</div>
+      {isTargetCandidate ? <Plus size={16} className="text-green-500" /> : <div className="w-3 h-3 border rounded-sm border-gray-200" />}
     </div>
+  )
+}
+    </div >
   );
 };
 

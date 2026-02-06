@@ -161,13 +161,35 @@ const App: React.FC = () => {
 
       const pdf = new jsPDF({
         orientation: 'landscape',
-        unit: 'px',
-        format: [canvas.width, canvas.height]
+        unit: 'mm',
+        format: 'a2'
       });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      // A2 Landscape size is 594mm x 420mm
+      const pageWidth = 594;
+      const pageHeight = 420;
+
+      const canvasRatio = canvas.width / canvas.height;
+      const pageRatio = pageWidth / pageHeight;
+
+      let renderWidth = pageWidth;
+      let renderHeight = pageHeight;
+
+      if (canvasRatio > pageRatio) {
+        // Canvas is wider than page -> fit to width
+        renderHeight = pageWidth / canvasRatio;
+      } else {
+        // Canvas is taller than page -> fit to height
+        renderWidth = pageHeight * canvasRatio;
+      }
+
+      // Center the image
+      const x = (pageWidth - renderWidth) / 2;
+      const y = (pageHeight - renderHeight) / 2;
+
+      pdf.addImage(imgData, 'PNG', x, y, renderWidth, renderHeight);
       pdf.save(`so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.pdf`);
-      showNotification('Đã xuất PDF thành công!', 'success');
+      showNotification('Đã xuất PDF thành công (Khổ A2)!', 'success');
     } catch (err) {
       console.error(err);
       showNotification('Lỗi khi xuất PDF', 'error');
