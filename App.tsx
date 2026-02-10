@@ -229,23 +229,23 @@ const App: React.FC = () => {
 
       // 3. Configure the CLONE to be FULL SIZE
       clone.style.width = `${EXPORT_WIDTH}px`;
-      clone.style.maxWidth = 'none';
       clone.style.height = 'auto';
       clone.style.minHeight = '1500px';
       clone.classList.remove('max-w-5xl');
 
-      // 4. FIX Room 35 Scaling
-      const room35Content = clone.querySelector('#room-35-content') as HTMLElement;
-      const room35Container = clone.querySelector('#room-35-container') as HTMLElement;
+      // 4. RESET Scale for Full Quality Export
+      // The floor plan is now inside a scalable wrapper. We must reset its scale to 1 to export at native resolution.
+      const scalableWrapper = clone.querySelector('#floor-plan-scalable-wrapper') as HTMLElement;
+      if (scalableWrapper) {
+        scalableWrapper.style.transform = 'scale(1)';
+        scalableWrapper.style.transformOrigin = 'top left';
+        scalableWrapper.style.margin = '0';
+        scalableWrapper.style.left = '0';
 
-      if (room35Content) {
-        room35Content.style.transform = 'none';
-        room35Content.style.width = '100%';
-      }
-      if (room35Container) {
-        room35Container.style.flex = 'none';
-        room35Container.style.height = 'auto';
-        room35Container.style.minHeight = 'auto';
+        // Center it if we want, or just let it fill. 
+        // Since export width is 1920 and plan is 1600, we have 320px slack.
+        // Let's center it for better aesthetics.
+        scalableWrapper.style.marginLeft = `${(EXPORT_WIDTH - 1600) / 2}px`;
       }
 
       // 5. Handle "Left Only" cropping
@@ -258,16 +258,26 @@ const App: React.FC = () => {
         if (corridor) corridor.style.display = 'none';
         if (rightCol) rightCol.style.display = 'none';
 
-        // Adjust for just the left column (approx 2/3 of 1920 = ~1280)
+        // Adjust for just the left column (~1066px of the 1600px width)
         if (leftCol) {
           leftCol.style.flex = 'none';
           leftCol.style.width = '100%';
           leftCol.style.borderRight = 'none';
         }
 
-        // Reduce container width to match left column content
-        captureWidth = 1280;
-        clone.style.width = `${captureWidth}px`;
+        // If we are cropping, we need to adjust the wrapper width too
+        if (scalableWrapper) {
+          // The content (left col) will want to take full width.
+          // We should reduce wrapper width to match the left column's natural size or a fixed size.
+          // 1600 * (3 / 4.65) approx = 1032px. Let's set wrapper to 1100px.
+          const newWrapperWidth = 1100;
+          scalableWrapper.style.width = `${newWrapperWidth}px`;
+          scalableWrapper.style.marginLeft = '0'; // align left for crop
+
+          // Adjust capture width
+          captureWidth = 1200; // slightly wider than wrapper to be safe
+          clone.style.width = `${captureWidth}px`;
+        }
       }
 
       // 6. Capture with html2canvas

@@ -140,271 +140,319 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
     </div>
   );
 
-  // Removed Room 35 auto-scale logic as we switched to responsive GRID
+  // Scaling Logic for Fixed Floor Plan
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [scale, setScale] = React.useState(1);
+
+  React.useEffect(() => {
+    const updateScale = () => {
+      if (!containerRef.current) return;
+      const parent = containerRef.current.parentElement;
+      if (!parent) return;
+
+      const PLAN_WIDTH = 1600; // Fixed base width for the floor plan
+      const availableWidth = parent.clientWidth;
+      // Scale down if parent is smaller than plan, otherwise 1 (or allow zoom?)
+      // User request said: setScale(Math.min(availableWidth / PLAN_WIDTH, 1));
+      // Let's allow it to scale down to fit viewport.
+      const newScale = Math.min(availableWidth / PLAN_WIDTH, 1);
+      setScale(newScale > 0 ? newScale : 1);
+    };
+
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   return (
-    <div className="relative w-full h-full min-h-[1500px] bg-white shadow-2xl rounded-sm border border-gray-300 text-gray-700 select-none flex flex-row">
+    <div className="w-full h-full overflow-hidden bg-gray-100 flex justify-center items-start pt-4">
+      {/* Scalable Container Wrapper */}
+      <div
+        id="floor-plan-scalable-wrapper"
+        ref={containerRef}
+        style={{
+          width: '1600px', // FIX WIDTH
+          height: '1500px', // FIX HEIGHT
+          transform: `scale(${scale})`,
+          transformOrigin: 'top center',
+          transition: 'transform 0.1s ease-out',
+        }}
+        className="relative bg-white shadow-2xl rounded-sm border border-gray-300 text-gray-700 select-none flex flex-row"
+      >
 
-      {/* === LEFT COLUMN (Workspaces) === */}
-      <div id="layout-left-col" className="flex-[3] flex flex-col border-r-2 border-gray-400 min-w-0 h-full">
+        {/* === LEFT COLUMN (Workspaces) === */}
+        <div id="layout-left-col" className="flex-[3] flex flex-col border-r-2 border-gray-400 min-w-0 h-full">
 
-        {/* Top: Lớp học hiện trạng (Classroom) */}
-        <div className="flex-[0.15] bg-hatch border-b-4 border-gray-800 relative p-4 flex-shrink-0">
-          <div className="absolute top-2 right-2 border-2 border-dashed border-gray-500 p-2 rounded transform rotate-12 bg-white/80 z-10">
-            <span className="text-xl font-black text-gray-500 uppercase block">Lớp học</span>
-            <span className="text-xs font-bold text-gray-400 block text-right">Hiện trạng</span>
+          {/* Top: Lớp học hiện trạng (Classroom) */}
+          <div className="flex-[0.15] bg-hatch border-b-4 border-gray-800 relative p-4 flex-shrink-0">
+            <div className="absolute top-2 right-2 border-2 border-dashed border-gray-500 p-2 rounded transform rotate-12 bg-white/80 z-10">
+              <span className="text-xl font-black text-gray-500 uppercase block">Lớp học</span>
+              <span className="text-xs font-bold text-gray-400 block text-right">Hiện trạng</span>
+            </div>
+            {/* Columns */}
+            <div className="w-10 h-10 bg-black absolute top-10 left-10"></div>
+            <div className="w-10 h-10 bg-black absolute top-10 right-32"></div>
+            <div className="w-10 h-10 bg-black absolute bottom-0 left-10"></div>
+            <div className="w-10 h-10 bg-black absolute bottom-0 right-32"></div>
           </div>
-          {/* Columns */}
-          <div className="w-10 h-10 bg-black absolute top-10 left-10"></div>
-          <div className="w-10 h-10 bg-black absolute top-10 right-32"></div>
-          <div className="w-10 h-10 bg-black absolute bottom-0 left-10"></div>
-          <div className="w-10 h-10 bg-black absolute bottom-0 right-32"></div>
-        </div>
 
-        {/* Middle: Room 12 People */}
-        <div className="flex-[0.22] border-b-4 border-gray-800 p-2 relative bg-gray-50 flex flex-col justify-between flex-shrink-0">
-          <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
-            PHÒNG 12 NGƯỜI
-          </div>
+          {/* Middle: Room 12 People */}
+          <div className="flex-[0.22] border-b-4 border-gray-800 p-2 relative bg-gray-50 flex flex-col justify-between flex-shrink-0">
+            <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
+              PHÒNG 12 NGƯỜI
+            </div>
 
-          {/* DOOR: Bottom Right of this room */}
-          {renderDoor("right-0 top-8 w-1.5 h-12 translate-x-[2px]")}
+            {/* DOOR: Bottom Right of this room */}
+            {renderDoor("right-0 top-8 w-1.5 h-12 translate-x-[2px]")}
 
-          <div className="flex z-10 h-full relative w-full justify-between px-4">
-            {/* Left Vertical Row (4 seats) */}
-            <div className="flex flex-col justify-center h-full mr-4">
-              {/* 2 groups of 2 tables vertical */}
-              <div className="flex items-center">
-                <div className="flex flex-col gap-0 justify-center h-full">
-                  {SEATS_ROOM_12.slice(8, 12).map(s => (
-                    <div key={`chair-12-left-${s.id}`} className="h-20 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 -rotate-90">
-                        <Armchair size={14} />
+            <div className="flex z-10 h-full relative w-full justify-between px-8">
+              {/* Left Vertical Row (4 seats) */}
+              <div className="flex flex-col justify-center h-full mr-8">
+                {/* 2 groups of 2 tables vertical */}
+                <div className="flex items-center">
+                  <div className="flex flex-col gap-0 justify-center h-full">
+                    {SEATS_ROOM_12.slice(8, 12).map(s => (
+                      <div key={`chair-12-left-${s.id}`} className="h-20 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 -rotate-90">
+                          <Armchair size={14} />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex flex-col border-4 border-gray-300 bg-white">
-                  {SEATS_ROOM_12.slice(8, 12).map(s => renderSeat(s, "rounded-none border-gray-300 border-b-0 last:border-b w-12 h-20"))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right side: Top and Bottom Rows (4 each) */}
-            <div className="flex-1 flex flex-col justify-between py-2">
-              {/* Row 1: Top (Chairs Top, Table Bottom) -> Back to Wall */}
-              <div className="flex flex-col items-center w-full">
-                {/* Chairs Top */}
-                <div className="flex justify-center w-full gap-0">
-                  {SEATS_ROOM_12.slice(0, 4).map(s => (
-                    <div key={`chair-12-top-${s.id}`} className="w-20 flex justify-center">
-                      <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mb-1 rotate-180">
-                        <Armchair size={14} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {/* Table */}
-                <div className="flex border-4 border-gray-300 bg-white">
-                  {SEATS_ROOM_12.slice(0, 4).map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
-                </div>
-              </div>
-
-              {/* Empty Center Space */}
-              <div className="flex-1 flex items-center justify-center">
-                <span className="text-gray-300 text-xs tracking-widest font-semibold opacity-50">KHÔNG GIAN CHUNG</span>
-              </div>
-
-              {/* Row 2: Bottom (Table Top, Chairs Bottom) -> Back to Wall */}
-              <div className="flex flex-col items-center w-full">
-                {/* Table */}
-                <div className="flex border-4 border-gray-300 bg-white">
-                  {SEATS_ROOM_12.slice(4, 8).map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
-                </div>
-                {/* Chairs Bottom */}
-                <div className="flex justify-center w-full gap-0">
-                  {SEATS_ROOM_12.slice(4, 8).map(s => (
-                    <div key={`chair-12-bot-${s.id}`} className="w-20 flex justify-center">
-                      <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mt-1">
-                        <Armchair size={14} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Columns */}
-          <div className="w-5 h-5 bg-black absolute bottom-0 left-0"></div>
-          <div className="w-5 h-5 bg-black absolute bottom-0 right-0"></div>
-        </div>
-
-        {/* Bottom: Room 35 People (Auto-FIT) */}
-        <div
-          id="room-35-container"
-          className="flex-[0.65] p-6 relative bg-white flex flex-col"
-        >
-          <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
-            PHÒNG 35 NGƯỜI
-          </div>
-
-          {/* DOOR: Top Right of this room */}
-          {renderDoor("right-0 top-12 w-1.5 h-12 translate-x-[2px]")}
-
-          {/* CABINETS: Bottom Right (3 stacked) */}
-          <div className="absolute bottom-6 right-0 flex flex-col gap-0.5 z-10">
-            <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
-              <div className="w-full h-0.5 bg-gray-400"></div>
-              <div className="w-full h-0.5 bg-gray-400"></div>
-              <div className="w-full h-0.5 bg-gray-400"></div>
-            </div>
-            <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
-              <div className="w-full h-0.5 bg-gray-400"></div>
-              <div className="w-full h-0.5 bg-gray-400"></div>
-              <div className="w-full h-0.5 bg-gray-400"></div>
-            </div>
-            <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
-              <div className="w-full h-0.5 bg-gray-400"></div>
-              <div className="w-full h-0.5 bg-gray-400"></div>
-              <div className="w-full h-0.5 bg-gray-400"></div>
-            </div>
-            <span className="text-[8px] font-bold text-center text-red-500">TỦ</span>
-          </div>
-
-          {/* MAIN CONTENT CONTAINER with Responsive GRID */}
-          <div className="flex-1 w-full h-full overflow-y-auto p-4">
-            <div
-              id="room-35-content"
-              className="grid gap-8 w-full justify-items-center"
-              style={{
-                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                alignContent: 'start'
-              }}
-            >
-              {/* Render all 35 seats as individual desks in the grid */}
-              {SEATS_ROOM_35.map(seat => (
-                <div key={seat.id} className="flex flex-col items-center">
-                  {/* Chair Top for aesthetic variation? Or standardized? 
-                        Let's standardize: Chair below desk for uniform grid. 
-                    */}
-                  <div className="border-4 border-gray-300 bg-white shadow-sm">
-                    {renderSeat(seat, "rounded-none border-0 w-24 h-16")}
+                    ))}
                   </div>
-                  <div className="w-20 flex justify-center -mt-1 z-0">
-                    <div className="w-10 h-10 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400">
-                      <Armchair size={18} />
-                    </div>
+                  <div className="flex flex-col border-4 border-gray-300 bg-white">
+                    {SEATS_ROOM_12.slice(8, 12).map(s => renderSeat(s, "rounded-none border-gray-300 border-b-0 last:border-b w-12 h-20"))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* Columns */}
-          <div className="w-5 h-5 bg-black absolute top-0 left-0"></div>
-          <div className="w-5 h-5 bg-black absolute top-0 right-0"></div>
-          <div className="w-5 h-5 bg-black absolute bottom-0 left-0"></div>
-          <div className="w-5 h-5 bg-black absolute bottom-0 right-0"></div>
-        </div>
+              {/* Right side: Top and Bottom Rows (4 each) */}
+              <div className="flex-1 flex flex-col justify-between py-2 pl-8">
+                {/* Row 1: Top (Chairs Top, Table Bottom) -> Back to Wall */}
+                <div className="flex flex-col items-center w-full">
+                  {/* Chairs Top */}
+                  <div className="flex justify-center w-full gap-0">
+                    {SEATS_ROOM_12.slice(0, 4).map(s => (
+                      <div key={`chair-12-top-${s.id}`} className="w-20 flex justify-center">
+                        <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mb-1 rotate-180">
+                          <Armchair size={14} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Table */}
+                  <div className="flex border-4 border-gray-300 bg-white">
+                    {SEATS_ROOM_12.slice(0, 4).map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
+                  </div>
+                </div>
 
-      </div>
+                {/* Empty Center Space */}
+                <div className="flex-1 flex items-center justify-center">
+                  <span className="text-gray-300 text-xs tracking-widest font-semibold opacity-50">KHÔNG GIAN CHUNG</span>
+                </div>
 
-      {/* === CORRIDOR (Hành lang) === */}
-      <div id="layout-corridor" className="w-16 bg-gray-100 border-r-2 border-gray-400 flex flex-col items-center justify-center relative flex-shrink-0 z-10">
-        <div className="absolute inset-y-0 left-1/2 border-l-2 border-dashed border-gray-300"></div>
-        <span className="text-gray-400 font-bold uppercase rotate-90 tracking-[0.5rem] whitespace-nowrap text-xs select-none">Hành Lang</span>
-      </div>
-
-      {/* === RIGHT COLUMN (Utilities) === */}
-      <div id="layout-right-col" className="flex-[1.5] flex flex-col bg-gray-100 min-w-0 h-full">
-
-        {/* Top: Storage & Stairs */}
-        <div className="h-64 border-b-2 border-gray-400 p-4 relative flex-shrink-0">
-          <div className="border border-gray-400 h-full bg-white flex flex-col p-2">
-            <div className="flex-1 border-b border-gray-300 mb-2 flex items-center justify-center bg-gray-50">
-              <div className="text-center">
-                <div className="text-xs font-bold">KHO</div>
+                {/* Row 2: Bottom (Table Top, Chairs Bottom) -> Back to Wall */}
+                <div className="flex flex-col items-center w-full">
+                  {/* Table */}
+                  <div className="flex border-4 border-gray-300 bg-white">
+                    {SEATS_ROOM_12.slice(4, 8).map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
+                  </div>
+                  {/* Chairs Bottom */}
+                  <div className="flex justify-center w-full gap-0">
+                    {SEATS_ROOM_12.slice(4, 8).map(s => (
+                      <div key={`chair-12-bot-${s.id}`} className="w-20 flex justify-center">
+                        <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mt-1">
+                          <Armchair size={14} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex-[2] border border-gray-300 relative bg-gray-100">
-              {/* Stairs Graphic */}
-              <div className="absolute inset-2 border border-gray-400">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-3 w-full border-b border-gray-300"></div>
+
+            {/* Columns */}
+            <div className="w-5 h-5 bg-black absolute bottom-0 left-0"></div>
+            <div className="w-5 h-5 bg-black absolute bottom-0 right-0"></div>
+          </div>
+
+          {/* Bottom: Room 35 People (Auto-FIT) */}
+          <div
+            id="room-35-container"
+            className="flex-[0.65] p-6 relative bg-white flex flex-col"
+          >
+            <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
+              PHÒNG 35 NGƯỜI
+            </div>
+
+            {/* DOOR: Top Right of this room */}
+            {renderDoor("right-0 top-12 w-1.5 h-12 translate-x-[2px]")}
+
+            {/* CABINETS: Bottom Right (3 stacked) */}
+            <div className="absolute bottom-6 right-0 flex flex-col gap-0.5 z-10">
+              <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
+                <div className="w-full h-0.5 bg-gray-400"></div>
+                <div className="w-full h-0.5 bg-gray-400"></div>
+                <div className="w-full h-0.5 bg-gray-400"></div>
+              </div>
+              <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
+                <div className="w-full h-0.5 bg-gray-400"></div>
+                <div className="w-full h-0.5 bg-gray-400"></div>
+                <div className="w-full h-0.5 bg-gray-400"></div>
+              </div>
+              <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
+                <div className="w-full h-0.5 bg-gray-400"></div>
+                <div className="w-full h-0.5 bg-gray-400"></div>
+                <div className="w-full h-0.5 bg-gray-400"></div>
+              </div>
+              <span className="text-[8px] font-bold text-center text-red-500">TỦ</span>
+            </div>
+
+            {/* MAIN CONTENT CONTAINER with FIXED GRID */}
+            <div className="flex-1 w-full h-full overflow-hidden p-4 flex items-center justify-center">
+              <div
+                id="room-35-content"
+                className="grid gap-x-12 gap-y-8"
+                style={{
+                  gridTemplateColumns: 'repeat(5, min-content)', // Fixed 5 columns to approximate the layout
+                  justifyContent: 'center',
+                  // Or user suggested 7 columns @ 100px. Let's try 5 columns of desks first which seems closer to visual
+                }}
+              >
+                {/* We need to revert to renderTableCluster or manual placement if we want strict grouping.
+                  However, user said "revert back to fixed grid".
+                  Let's use a fixed grid of individual seats but with specific column count.
+                  Current SEATS_ROOM_35 has 35 seats. 5x7 = 35. scale to 7 rows?
+                  Or 6-7 columns per user? 35 / 7 = 5 rows.
+                  User said "7 columns fixed".
+              */}
+                <style>{`
+                 #room-35-content {
+                   display: grid;
+                   grid-template-columns: repeat(7, 100px); /* 7 Fixed Columns */
+                   gap: 20px;
+                 }
+               `}</style>
+
+                {/* Render all 35 seats */}
+                {SEATS_ROOM_35.map(seat => (
+                  <div key={seat.id} className="flex flex-col items-center">
+                    <div className="border-4 border-gray-300 bg-white shadow-sm">
+                      {renderSeat(seat, "rounded-none border-0 w-24 h-16")}
+                    </div>
+                    <div className="w-20 flex justify-center -mt-1 z-0">
+                      <div className="w-10 h-10 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400">
+                        <Armchair size={18} />
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
-              <span className="absolute bottom-1 w-full text-center text-[10px] font-bold">THANG BỘ</span>
             </div>
-            <div className="flex-1 mt-2 border border-gray-300 bg-white flex items-center justify-center">
-              <div className="w-8 h-8 border border-gray-400 flex items-center justify-center">
-                <Archive size={16} />
+
+            {/* Columns */}
+            <div className="w-5 h-5 bg-black absolute top-0 left-0"></div>
+            <div className="w-5 h-5 bg-black absolute top-0 right-0"></div>
+            <div className="w-5 h-5 bg-black absolute bottom-0 left-0"></div>
+            <div className="w-5 h-5 bg-black absolute bottom-0 right-0"></div>
+          </div>
+
+        </div>
+
+        {/* === CORRIDOR (Hành lang) === */}
+        <div id="layout-corridor" className="w-16 bg-gray-100 border-r-2 border-gray-400 flex flex-col items-center justify-center relative flex-shrink-0 z-10">
+          <div className="absolute inset-y-0 left-1/2 border-l-2 border-dashed border-gray-300"></div>
+          <span className="text-gray-400 font-bold uppercase rotate-90 tracking-[0.5rem] whitespace-nowrap text-xs select-none">Hành Lang</span>
+        </div>
+
+        {/* === RIGHT COLUMN (Utilities) === */}
+        <div id="layout-right-col" className="flex-[1.5] flex flex-col bg-gray-100 min-w-0 h-full">
+
+          {/* Top: Storage & Stairs */}
+          <div className="h-64 border-b-2 border-gray-400 p-4 relative flex-shrink-0">
+            <div className="border border-gray-400 h-full bg-white flex flex-col p-2">
+              <div className="flex-1 border-b border-gray-300 mb-2 flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                  <div className="text-xs font-bold">KHO</div>
+                </div>
+              </div>
+              <div className="flex-[2] border border-gray-300 relative bg-gray-100">
+                {/* Stairs Graphic */}
+                <div className="absolute inset-2 border border-gray-400">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="h-3 w-full border-b border-gray-300"></div>
+                  ))}
+                </div>
+                <span className="absolute bottom-1 w-full text-center text-[10px] font-bold">THANG BỘ</span>
+              </div>
+              <div className="flex-1 mt-2 border border-gray-300 bg-white flex items-center justify-center">
+                <div className="w-8 h-8 border border-gray-400 flex items-center justify-center">
+                  <Archive size={16} />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Middle: Restrooms */}
-        <div className="h-48 border-b-2 border-gray-400 p-2 flex gap-2 flex-shrink-0">
-          <div className="flex-1 bg-white border border-gray-300 flex items-center justify-center relative">
-            <span className="text-xs font-bold rotate-90">WC NAM</span>
-            <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full"></div>
-          </div>
-          <div className="flex-1 bg-white border border-gray-300 flex items-center justify-center relative">
-            <span className="text-xs font-bold rotate-90">WC NỮ</span>
-            <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full"></div>
-          </div>
-        </div>
-
-        {/* Bottom: Meeting Room & Pantry */}
-        <div className="flex-1 flex flex-col relative min-h-0 overflow-y-auto">
-
-          {/* DOOR: Meeting Room/Pantry Entrance (Left side facing corridor) */}
-          {renderDoor("left-0 top-32 w-1.5 h-12 -translate-x-[2px]")}
-
-          {/* Pantry / Waiting Area */}
-          <div className="flex-1 border-b border-gray-300 p-4 bg-white relative min-h-[120px]">
-            <div className="absolute top-2 left-2 text-[10px] font-bold z-10">PHÒNG THỰC HÀNH CTO</div>
-            <div className="w-full h-full flex items-center justify-center">
-              <DoorOpen size={32} className="text-gray-400" />
+          {/* Middle: Restrooms */}
+          <div className="h-48 border-b-2 border-gray-400 p-2 flex gap-2 flex-shrink-0">
+            <div className="flex-1 bg-white border border-gray-300 flex items-center justify-center relative">
+              <span className="text-xs font-bold rotate-90">WC NAM</span>
+              <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full"></div>
+            </div>
+            <div className="flex-1 bg-white border border-gray-300 flex items-center justify-center relative">
+              <span className="text-xs font-bold rotate-90">WC NỮ</span>
+              <div className="absolute top-2 right-2 w-4 h-4 bg-gray-200 rounded-full"></div>
             </div>
           </div>
 
-          {/* Meeting Room */}
-          <div className="flex-[2] p-6 bg-white relative min-h-[200px]">
-            <h3 className="absolute bottom-2 right-2 text-xs font-bold text-gray-500">PHÒNG HỌP</h3>
+          {/* Bottom: Meeting Room & Pantry */}
+          <div className="flex-1 flex flex-col relative min-h-0 overflow-y-auto">
 
-            {/* Oval Table */}
-            <div className="w-3/4 mx-auto h-32 border-2 border-gray-600 rounded-[50px] bg-gray-50 flex items-center justify-center shadow-sm relative mt-4">
-              <span className="text-xs font-bold text-gray-400">BÀN HỌP</span>
-              {/* Chairs around table */}
-              <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-10"></div>
-              <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-24"></div>
-              <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-36"></div>
+            {/* DOOR: Meeting Room/Pantry Entrance (Left side facing corridor) */}
+            {renderDoor("left-0 top-32 w-1.5 h-12 -translate-x-[2px]")}
 
-              <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-10"></div>
-              <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-24"></div>
-              <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-36"></div>
-
-              <div className="absolute top-10 -left-4 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
-              <div className="absolute top-10 -right-4 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
+            {/* Pantry / Waiting Area */}
+            <div className="flex-1 border-b border-gray-300 p-4 bg-white relative min-h-[120px]">
+              <div className="absolute top-2 left-2 text-[10px] font-bold z-10">PHÒNG THỰC HÀNH CTO</div>
+              <div className="w-full h-full flex items-center justify-center">
+                <DoorOpen size={32} className="text-gray-400" />
+              </div>
             </div>
-          </div>
 
-          {/* Stairs Exit */}
-          <div className="h-20 border-t border-gray-400 relative flex-shrink-0">
-            <div className="absolute bottom-2 right-2 w-16 h-16 rounded-full border border-gray-400 flex items-center justify-center">
-              <div className="w-full border-t border-gray-400 rotate-45"></div>
-              <div className="w-full border-t border-gray-400 -rotate-45 absolute"></div>
+            {/* Meeting Room */}
+            <div className="flex-[2] p-6 bg-white relative min-h-[200px]">
+              <h3 className="absolute bottom-2 right-2 text-xs font-bold text-gray-500">PHÒNG HỌP</h3>
+
+              {/* Oval Table */}
+              <div className="w-3/4 mx-auto h-32 border-2 border-gray-600 rounded-[50px] bg-gray-50 flex items-center justify-center shadow-sm relative mt-4">
+                <span className="text-xs font-bold text-gray-400">BÀN HỌP</span>
+                {/* Chairs around table */}
+                <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-10"></div>
+                <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-24"></div>
+                <div className="absolute -top-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-36"></div>
+
+                <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-10"></div>
+                <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-24"></div>
+                <div className="absolute -bottom-4 w-5 h-5 bg-white border border-gray-400 rounded-full left-36"></div>
+
+                <div className="absolute top-10 -left-4 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
+                <div className="absolute top-10 -right-4 w-5 h-5 bg-white border border-gray-400 rounded-full"></div>
+              </div>
             </div>
-            <span className="absolute bottom-1 right-20 text-[10px]">THANG THOÁT HIỂM</span>
-          </div>
 
+            {/* Stairs Exit */}
+            <div className="h-20 border-t border-gray-400 relative flex-shrink-0">
+              <div className="absolute bottom-2 right-2 w-16 h-16 rounded-full border border-gray-400 flex items-center justify-center">
+                <div className="w-full border-t border-gray-400 rotate-45"></div>
+                <div className="w-full border-t border-gray-400 -rotate-45 absolute"></div>
+              </div>
+              <span className="absolute bottom-1 right-20 text-[10px]">THANG THOÁT HIỂM</span>
+            </div>
+
+          </div>
         </div>
+
       </div>
-
-    </div>
-  );
+      );
 };
 
-export default FloorPlan;
+      export default FloorPlan;
