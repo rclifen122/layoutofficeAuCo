@@ -200,7 +200,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
     <div className="relative w-full h-full min-h-[1500px] bg-white shadow-2xl rounded-sm border border-gray-300 text-gray-700 select-none flex flex-row">
 
       {/* === LEFT COLUMN (Workspaces) === */}
-      <div className="flex-[3] flex flex-col border-r-2 border-gray-400 min-w-0 h-full">
+      <div id="layout-left-col" className="flex-[3] flex flex-col border-r-2 border-gray-400 min-w-0 h-full">
 
         {/* Top: Lớp học hiện trạng (Classroom) */}
         <div className="flex-[0.15] bg-hatch border-b-4 border-gray-800 relative p-4 flex-shrink-0">
@@ -248,6 +248,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
 
         {/* Bottom: Room 35 People (Auto-FIT) */}
         <div
+          id="room-35-container"
           ref={room35ContainerRef}
           className="flex-[0.65] p-6 relative bg-white flex flex-col"
         >
@@ -296,6 +297,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
             className="flex-1 flex items-center justify-center w-full h-full"
           >
             <div
+              id="room-35-content"
               ref={room35ContentRef}
               style={{
                 transform: `scale(${appliedScale})`,
@@ -331,13 +333,13 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
       </div>
 
       {/* === CORRIDOR (Hành lang) === */}
-      <div className="w-16 bg-gray-100 border-r-2 border-gray-400 flex flex-col items-center justify-center relative flex-shrink-0 z-10">
+      <div id="layout-corridor" className="w-16 bg-gray-100 border-r-2 border-gray-400 flex flex-col items-center justify-center relative flex-shrink-0 z-10">
         <div className="absolute inset-y-0 left-1/2 border-l-2 border-dashed border-gray-300"></div>
         <span className="text-gray-400 font-bold uppercase rotate-90 tracking-[0.5rem] whitespace-nowrap text-xs select-none">Hành Lang</span>
       </div>
 
       {/* === RIGHT COLUMN (Utilities) === */}
-      <div className="flex-[1.5] flex flex-col bg-gray-100 min-w-0 h-full">
+      <div id="layout-right-col" className="flex-[1.5] flex flex-col bg-gray-100 min-w-0 h-full">
 
         {/* Top: Storage & Stairs */}
         <div className="h-64 border-b-2 border-gray-400 p-4 relative flex-shrink-0">

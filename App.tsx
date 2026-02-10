@@ -248,14 +248,40 @@ const App: React.FC = () => {
         room35Container.style.minHeight = 'auto';
       }
 
-      // 5. Capture with html2canvas using the forced dimensions
+      // 5. Handle "Left Only" cropping
+      let captureWidth = EXPORT_WIDTH;
+      if (options.cropLeft) {
+        const corridor = clone.querySelector('#layout-corridor') as HTMLElement;
+        const rightCol = clone.querySelector('#layout-right-col') as HTMLElement;
+        const leftCol = clone.querySelector('#layout-left-col') as HTMLElement;
+
+        if (corridor) corridor.style.display = 'none';
+        if (rightCol) rightCol.style.display = 'none';
+
+        // Adjust for just the left column
+        if (leftCol) {
+          leftCol.style.flex = 'none';
+          leftCol.style.width = '100%';
+          leftCol.style.borderRight = 'none';
+        }
+
+        // Reduce container width to match left column content (approx 1500px is safe for the expanded layout)
+        captureWidth = 1600;
+        clone.style.width = `${captureWidth}px`;
+      }
+
+      // 6. Capture with html2canvas
       const canvas = await html2canvas(clone, {
-        scale: 2,
+        scale: 3, // Increased scale for sharper text
         useCORS: true,
         logging: false,
-        width: EXPORT_WIDTH,
-        windowWidth: EXPORT_WIDTH,
-        backgroundColor: '#ffffff'
+        width: captureWidth,
+        windowWidth: captureWidth,
+        backgroundColor: '#ffffff',
+        scrollX: 0, // Force top-left alignment
+        scrollY: 0,
+        x: 0,
+        y: 0
       });
 
       return canvas.toDataURL('image/png');
@@ -273,14 +299,14 @@ const App: React.FC = () => {
 
 
 
-  const handleExportImage = async () => {
-    const imgData = await handleCapture();
+  const handleExportImage = async (cropLeft: boolean = false) => {
+    const imgData = await handleCapture({ cropLeft });
     if (!imgData) return;
 
     try {
       const link = document.createElement('a');
       link.href = imgData;
-      link.download = `so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.png`;
+      link.download = `so-do-${cropLeft ? 'khu-lam-viec' : 'day-du'}-${new Date().toISOString().split('T')[0]}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -390,10 +416,16 @@ const App: React.FC = () => {
             <Download size={16} /> Copy Ảnh
           </button>
           <button
-            onClick={handleExportImage}
+            onClick={() => handleExportImage(false)}
             className="flex items-center gap-2 px-4 py-2 text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md transition-colors text-sm font-semibold"
           >
-            <Download size={16} /> Xuất Ảnh (PNG)
+            <Download size={16} /> Xuất Ảnh (Full)
+          </button>
+          <button
+            onClick={() => handleExportImage(true)}
+            className="flex items-center gap-2 px-4 py-2 text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-md transition-colors text-sm font-semibold"
+          >
+            <Download size={16} /> Xuất Khu Làm Việc (Trái)
           </button>
           <button
             onClick={() => {
