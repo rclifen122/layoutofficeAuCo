@@ -200,7 +200,7 @@ const App: React.FC = () => {
   };
 
   // Common capture function to ensure consistent high-quality export
-  const handleCapture = async (): Promise<string | null> => {
+  const handleCapture = async (options: { cropLeft?: boolean } = {}): Promise<string | null> => {
     const input = document.getElementById('floor-plan-container');
     if (!input) {
       showNotification('Không tìm thấy sơ đồ để xuất', 'error');

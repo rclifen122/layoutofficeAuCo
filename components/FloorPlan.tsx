@@ -224,20 +224,68 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
           {/* DOOR: Bottom Right of this room */}
           {renderDoor("right-0 top-8 w-1.5 h-12 translate-x-[2px]")}
 
-          <div className="flex flex-col h-full justify-between py-2">
-            {/* Row 1: Top Wall - 6 seats (Connected against wall) */}
-            <div className="flex justify-center scale-90 origin-top">
-              {renderWallTableTop(SEATS_ROOM_12.slice(0, 6))}
+          <div className="flex z-10 h-full relative">
+            {/* Left Vertical Row (4 seats) */}
+            <div className="flex flex-col justify-center h-full mr-1">
+              {/* 2 groups of 2 tables vertical */}
+              <div className="flex items-center">
+                <div className="flex flex-col gap-0 justify-center h-full">
+                  {SEATS_ROOM_12.slice(8, 12).map(s => (
+                    <div key={`chair-12-left-${s.id}`} className="h-20 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 -rotate-90">
+                        <Armchair size={14} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-col border-4 border-gray-300 bg-white">
+                  {SEATS_ROOM_12.slice(8, 12).map(s => renderSeat(s, "rounded-none border-gray-300 border-b-0 last:border-b w-12 h-20"))}
+                </div>
+              </div>
             </div>
 
-            {/* Empty Center Space */}
-            <div className="flex-1 flex items-center justify-center">
-              <span className="text-gray-300 text-xs tracking-widest font-semibold opacity-50">KHÔNG GIAN CHUNG</span>
-            </div>
+            {/* Right side: Top and Bottom Rows (4 each) */}
+            <div className="flex-1 flex flex-col justify-between py-2">
+              {/* Row 1: Top (Chairs Top, Table Bottom) -> Back to Wall */}
+              <div className="flex flex-col items-center w-full">
+                {/* Chairs Top */}
+                <div className="flex justify-center w-full gap-0">
+                  {SEATS_ROOM_12.slice(0, 4).map(s => (
+                    <div key={`chair-12-top-${s.id}`} className="w-20 flex justify-center">
+                      <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mb-1 rotate-180">
+                        <Armchair size={14} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Table */}
+                <div className="flex border-4 border-gray-300 bg-white">
+                  {SEATS_ROOM_12.slice(0, 4).map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
+                </div>
+              </div>
 
-            {/* Row 2: Bottom Wall - 6 seats (Connected against wall) */}
-            <div className="flex justify-center scale-90 origin-bottom">
-              {renderWallTableBottom(SEATS_ROOM_12.slice(6, 12))}
+              {/* Empty Center Space */}
+              <div className="flex-1 flex items-center justify-center">
+                <span className="text-gray-300 text-xs tracking-widest font-semibold opacity-50">KHÔNG GIAN CHUNG</span>
+              </div>
+
+              {/* Row 2: Bottom (Table Top, Chairs Bottom) -> Back to Wall */}
+              <div className="flex flex-col items-center w-full">
+                {/* Table */}
+                <div className="flex border-4 border-gray-300 bg-white">
+                  {SEATS_ROOM_12.slice(4, 8).map(s => renderSeat(s, "rounded-none border-gray-300 border-r-0 last:border-r hover:z-10"))}
+                </div>
+                {/* Chairs Bottom */}
+                <div className="flex justify-center w-full gap-0">
+                  {SEATS_ROOM_12.slice(4, 8).map(s => (
+                    <div key={`chair-12-bot-${s.id}`} className="w-20 flex justify-center">
+                      <div className="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400 mt-1">
+                        <Armchair size={14} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
