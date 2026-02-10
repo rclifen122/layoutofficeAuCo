@@ -140,61 +140,7 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
     </div>
   );
 
-  // State for dynamic scaling of Room 35
-  const [autoScale, setAutoScale] = React.useState(1);
-  const [userZoom, setUserZoom] = React.useState(1);
-  const room35ContainerRef = React.useRef<HTMLDivElement>(null);
-  const room35ContentRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const calculateScale = () => {
-      if (room35ContainerRef.current && room35ContentRef.current) {
-        const container = room35ContainerRef.current.getBoundingClientRect();
-        // Measure content *without* scale transform if possible, 
-        // but scrollHeight on the inner element works well if we don't constrain its height.
-        const contentHeight = room35ContentRef.current.scrollHeight;
-        const contentWidth = room35ContentRef.current.scrollWidth;
-
-        // Available space
-        const containerHeight = container.height - 60; // Padding adjustment
-        const containerWidth = container.width - 40;
-
-        if (contentHeight > 0 && contentWidth > 0) {
-          const scaleH = containerHeight / contentHeight;
-          const scaleW = containerWidth / contentWidth;
-
-          // Apply safety factor and cap auto-scale at 1 (no auto-upscale)
-          const newScale = Math.min(1, Math.min(scaleH, scaleW)) * 0.95;
-          setAutoScale(newScale);
-        }
-      }
-    };
-
-    // Observer for container resize
-    const observer = new ResizeObserver(calculateScale);
-    if (room35ContainerRef.current) {
-      observer.observe(room35ContainerRef.current);
-    }
-
-    // Also recalculate on window resize
-    window.addEventListener('resize', calculateScale);
-
-    // Initial calculation sequence
-    calculateScale();
-    setTimeout(calculateScale, 100);
-    setTimeout(calculateScale, 500); // Extra safety check
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', calculateScale);
-    };
-  }, [assignments]); // Dependency on assignments is minimal impact
-
-  const handleZoomIn = () => setUserZoom(prev => Math.min(prev + 0.1, 3));
-  const handleZoomOut = () => setUserZoom(prev => Math.max(prev - 0.1, 0.5));
-  const handleResetZoom = () => setUserZoom(1);
-
-  const appliedScale = autoScale * userZoom;
+  // Removed Room 35 auto-scale logic as we switched to responsive GRID
 
   return (
     <div className="relative w-full h-full min-h-[1500px] bg-white shadow-2xl rounded-sm border border-gray-300 text-gray-700 select-none flex flex-row">
@@ -224,9 +170,9 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
           {/* DOOR: Bottom Right of this room */}
           {renderDoor("right-0 top-8 w-1.5 h-12 translate-x-[2px]")}
 
-          <div className="flex z-10 h-full relative">
+          <div className="flex z-10 h-full relative w-full justify-between px-4">
             {/* Left Vertical Row (4 seats) */}
-            <div className="flex flex-col justify-center h-full mr-1">
+            <div className="flex flex-col justify-center h-full mr-4">
               {/* 2 groups of 2 tables vertical */}
               <div className="flex items-center">
                 <div className="flex flex-col gap-0 justify-center h-full">
@@ -304,24 +250,11 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
             PHÒNG 35 NGƯỜI
           </div>
 
-          {/* Zoom Controls */}
-          <div className="absolute bottom-4 left-4 z-50 flex flex-col gap-2 opacity-50 hover:opacity-100 transition-opacity">
-            <div className="flex gap-1">
-              <button onClick={handleZoomIn} className="w-8 h-8 bg-gray-800 text-white rounded flex items-center justify-center font-bold shadow hover:bg-black" title="Zoom In">+</button>
-              <button onClick={handleZoomOut} className="w-8 h-8 bg-gray-800 text-white rounded flex items-center justify-center font-bold shadow hover:bg-black" title="Zoom Out">-</button>
-            </div>
-            <button onClick={handleResetZoom} className="px-2 py-1 bg-gray-200 text-xs font-bold rounded shadow hover:bg-gray-300" title="Reset Zoom">Auto-Fit</button>
-            {/* Debug Info */}
-            <div className="text-[10px] text-gray-400 font-mono">
-              Scale: {(appliedScale * 100).toFixed(0)}%
-            </div>
-          </div>
-
           {/* DOOR: Top Right of this room */}
           {renderDoor("right-0 top-12 w-1.5 h-12 translate-x-[2px]")}
 
           {/* CABINETS: Bottom Right (3 stacked) */}
-          <div className="absolute bottom-6 right-0 flex flex-col gap-0.5 z-10 transition-transform origin-right" style={{ transform: `scale(${Math.min(1, appliedScale + 0.2)})` }}>
+          <div className="absolute bottom-6 right-0 flex flex-col gap-0.5 z-10">
             <div className="w-8 h-10 bg-gray-200 border-2 border-red-400 flex flex-col justify-between p-1">
               <div className="w-full h-0.5 bg-gray-400"></div>
               <div className="w-full h-0.5 bg-gray-400"></div>
@@ -340,34 +273,32 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
             <span className="text-[8px] font-bold text-center text-red-500">TỦ</span>
           </div>
 
-          {/* MAIN CONTENT CONTAINER with Auto-Scale */}
-          <div
-            className="flex-1 flex items-center justify-center w-full h-full"
-          >
+          {/* MAIN CONTENT CONTAINER with Responsive GRID */}
+          <div className="flex-1 w-full h-full overflow-y-auto p-4">
             <div
               id="room-35-content"
-              ref={room35ContentRef}
+              className="grid gap-8 w-full justify-items-center"
               style={{
-                transform: `scale(${appliedScale})`,
-                transformOrigin: 'center center',
-                transition: 'transform 0.2s ease-out'
+                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                alignContent: 'start'
               }}
-              className="flex flex-col items-center gap-12 py-8 px-8" // Use gap-12 as requested
             >
-              {/* Row 1 */}
-              <div className="flex items-center justify-center">
-                {renderTableCluster(SEATS_ROOM_35.slice(0, 6), SEATS_ROOM_35.slice(6, 12))}
-              </div>
-
-              {/* Row 2 (Align Right) */}
-              <div className="flex items-center justify-center w-full">
-                {renderTableCluster(SEATS_ROOM_35.slice(12, 18), SEATS_ROOM_35.slice(18, 23), true)}
-              </div>
-
-              {/* Row 3 */}
-              <div className="flex items-center justify-center">
-                {renderTableCluster(SEATS_ROOM_35.slice(23, 29), SEATS_ROOM_35.slice(29, 35))}
-              </div>
+              {/* Render all 35 seats as individual desks in the grid */}
+              {SEATS_ROOM_35.map(seat => (
+                <div key={seat.id} className="flex flex-col items-center">
+                  {/* Chair Top for aesthetic variation? Or standardized? 
+                        Let's standardize: Chair below desk for uniform grid. 
+                    */}
+                  <div className="border-4 border-gray-300 bg-white shadow-sm">
+                    {renderSeat(seat, "rounded-none border-0 w-24 h-16")}
+                  </div>
+                  <div className="w-20 flex justify-center -mt-1 z-0">
+                    <div className="w-10 h-10 rounded-full border border-gray-400 flex items-center justify-center bg-gray-50 text-gray-400">
+                      <Armchair size={18} />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

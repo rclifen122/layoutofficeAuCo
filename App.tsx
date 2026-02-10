@@ -208,7 +208,7 @@ const App: React.FC = () => {
     }
 
     let cloneContainer: HTMLDivElement | null = null;
-    const EXPORT_WIDTH = 2500; // Force a very large width to ensure "desktop" layout with no wrapping
+    const EXPORT_WIDTH = 1920; // Set base width to 1920px (Full HD standard) for consistent layout
 
     try {
       showNotification('Đang xử lý hình ảnh...', 'success');
@@ -258,15 +258,15 @@ const App: React.FC = () => {
         if (corridor) corridor.style.display = 'none';
         if (rightCol) rightCol.style.display = 'none';
 
-        // Adjust for just the left column
+        // Adjust for just the left column (approx 2/3 of 1920 = ~1280)
         if (leftCol) {
           leftCol.style.flex = 'none';
           leftCol.style.width = '100%';
           leftCol.style.borderRight = 'none';
         }
 
-        // Reduce container width to match left column content (approx 1500px is safe for the expanded layout)
-        captureWidth = 1600;
+        // Reduce container width to match left column content
+        captureWidth = 1280;
         clone.style.width = `${captureWidth}px`;
       }
 
