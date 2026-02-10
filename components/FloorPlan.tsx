@@ -452,7 +452,8 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         </div>
 
       </div>
-      );
+    </div>
+  );
 };
 
-      export default FloorPlan;
+export default FloorPlan;
