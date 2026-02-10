@@ -208,59 +208,54 @@ const App: React.FC = () => {
     }
 
     let cloneContainer: HTMLDivElement | null = null;
+    const EXPORT_WIDTH = 2500; // Force a very large width to ensure "desktop" layout with no wrapping
 
     try {
       showNotification('Đang xử lý hình ảnh...', 'success');
 
-      // 1. Clone the DOM to modify it safely without affecting UI
+      // 1. Clone the DOM
       const clone = input.cloneNode(true) as HTMLElement;
 
-      // 2. Setup a hidden container for the clone
+      // 2. Setup a hidden container - allow it to be huge
       cloneContainer = document.createElement('div');
-      cloneContainer.style.position = 'absolute';
-      cloneContainer.style.top = '-10000px';
-      cloneContainer.style.left = '-10000px';
-      cloneContainer.style.width = '1280px'; // Force a good desktop width
-      cloneContainer.style.height = 'auto'; // Allow height to grow
-      cloneContainer.style.zIndex = '-1';
+      cloneContainer.style.position = 'fixed';
+      cloneContainer.style.top = '0';
+      cloneContainer.style.left = '0';
+      cloneContainer.style.opacity = '0';
+      cloneContainer.style.pointerEvents = 'none';
+      cloneContainer.style.zIndex = '-9999';
       document.body.appendChild(cloneContainer);
       cloneContainer.appendChild(clone);
 
-      // 3. FIX: Remove transforms from Room 35 to prevent "constricted" or "missing people"
-      // caused by html2canvas misinterpreting scale() or viewport constraints.
+      // 3. Configure the CLONE to be FULL SIZE
+      clone.style.width = `${EXPORT_WIDTH}px`;
+      clone.style.maxWidth = 'none';
+      clone.style.height = 'auto';
+      clone.style.minHeight = '1500px';
+      clone.classList.remove('max-w-5xl');
+
+      // 4. FIX Room 35 Scaling
       const room35Content = clone.querySelector('#room-35-content') as HTMLElement;
       const room35Container = clone.querySelector('#room-35-container') as HTMLElement;
 
       if (room35Content) {
-        // Reset scale to 1:1
         room35Content.style.transform = 'none';
         room35Content.style.width = '100%';
       }
       if (room35Container) {
-        // Allow container to grow to fit unscaled content
         room35Container.style.flex = 'none';
         room35Container.style.height = 'auto';
-        room35Container.style.minHeight = '600px'; // Ensure base size
+        room35Container.style.minHeight = 'auto';
       }
 
-      // Also ensure the main left column can grow
-      // We need to target the parent of room-35-container which is the left column.
-      // Since we don't have an ID on it easily, we can traverse or just let the main clone height:auto handle it.
-
-      // 4. Capture using html2canvas on the CLONE
-      // Wait a moment for fonts/styles? Usually ok synchronous-ish in React but good to wait a tick? 
-      // html2canvas is async.
-
+      // 5. Capture with html2canvas using the forced dimensions
       const canvas = await html2canvas(clone, {
-        scale: 2, // High resolution
+        scale: 2,
         useCORS: true,
         logging: false,
-        width: 1280, // Match container
-        windowWidth: 1280,
-        backgroundColor: '#ffffff',
-        onclone: (doc) => {
-          // Any direct DOM manipulation on the cloned doc can go here too
-        }
+        width: EXPORT_WIDTH,
+        windowWidth: EXPORT_WIDTH,
+        backgroundColor: '#ffffff'
       });
 
       return canvas.toDataURL('image/png');
@@ -270,12 +265,13 @@ const App: React.FC = () => {
       showNotification('Lỗi khi xử lý hình ảnh', 'error');
       return null;
     } finally {
-      // 5. Cleanup
       if (cloneContainer && document.body.contains(cloneContainer)) {
         document.body.removeChild(cloneContainer);
       }
     }
   };
+
+
 
   const handleExportImage = async () => {
     const imgData = await handleCapture();
