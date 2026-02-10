@@ -226,7 +226,8 @@ const App: React.FC = () => {
         x: 0,
         y: 0,
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        backgroundColor: '#ffffff' // Force white background
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -243,6 +244,110 @@ const App: React.FC = () => {
     } catch (err) {
       console.error(err);
       showNotification('Lỗi khi xuất ảnh', 'error');
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    const input = document.getElementById('floor-plan-container');
+    if (!input) {
+      showNotification('Không tìm thấy sơ đồ để copy', 'error');
+      return;
+    }
+
+    try {
+      showNotification('Đang copy vào clipboard...', 'success');
+
+      const rect = input.getBoundingClientRect();
+      const scrollWidth = Math.max(input.scrollWidth, rect.width);
+      const scrollHeight = Math.max(input.scrollHeight, rect.height);
+
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        width: scrollWidth,
+        height: scrollHeight,
+        windowWidth: scrollWidth,
+        windowHeight: scrollHeight,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        backgroundColor: '#ffffff'
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          showNotification('Lỗi tạo ảnh blob', 'error');
+          return;
+        }
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              [blob.type]: blob
+            })
+          ]);
+          showNotification('Đã copy ảnh vào clipboard!', 'success');
+        } catch (err) {
+          console.error('Clipboard write failed:', err);
+          showNotification('Trình duyệt không hỗ trợ copy ảnh này.', 'error');
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      showNotification('Lỗi khi copy ảnh', 'error');
+    }
+  };
+
+  const handleExportPDF = async () => {
+    const input = document.getElementById('floor-plan-container');
+    if (!input) {
+      showNotification('Không tìm thấy sơ đồ để xuất PDF', 'error');
+      return;
+    }
+
+    try {
+      showNotification('Đang tạo PDF...', 'success');
+
+      const rect = input.getBoundingClientRect();
+      const scrollWidth = Math.max(input.scrollWidth, rect.width);
+      const scrollHeight = Math.max(input.scrollHeight, rect.height);
+
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        width: scrollWidth,
+        height: scrollHeight,
+        windowWidth: scrollWidth,
+        windowHeight: scrollHeight,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calculate PDF dimensions (maintain aspect ratio)
+      const imgWidth = scrollWidth;
+      const imgHeight = scrollHeight;
+      
+      // Initialize PDF (landscape, using pixels to match canvas)
+      const pdf = new jsPDF({
+        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [imgWidth, imgHeight]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.save(`so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.pdf`);
+
+      showNotification('Đã xuất PDF thành công!', 'success');
+    } catch (err) {
+      console.error(err);
+      showNotification('Lỗi khi xuất PDF', 'error');
     }
   };
 
@@ -282,11 +387,17 @@ const App: React.FC = () => {
             <RefreshCcw size={16} /> Reset
           </button>
           <button
-            onClick={() => window.print()}
+            onClick={handleExportPDF}
             className="flex items-center gap-2 px-4 py-2 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-md transition-colors text-sm font-semibold"
-            title="Sử dụng tính năng in của trình duyệt để có chất lượng tốt nhất (Save as PDF)"
           >
-            <Download size={16} /> In PDF (Vector)
+            <Download size={16} /> Xuất PDF
+          </button>
+          <button
+            onClick={handleCopyToClipboard}
+            className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-md transition-colors text-sm font-semibold"
+            title="Copy ảnh vào clipboard để dán (Ctrl+V)"
+          >
+            <Download size={16} /> Copy Ảnh
           </button>
           <button
             onClick={handleExportImage}
