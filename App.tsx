@@ -199,149 +199,141 @@ const App: React.FC = () => {
     }
   };
 
-  const handleExportImage = async () => {
+  // Common capture function to ensure consistent high-quality export
+  const handleCapture = async (): Promise<string | null> => {
     const input = document.getElementById('floor-plan-container');
     if (!input) {
-      showNotification('Không tìm thấy sơ đồ để xuất ảnh', 'error');
-      return;
+      showNotification('Không tìm thấy sơ đồ để xuất', 'error');
+      return null;
     }
 
+    let cloneContainer: HTMLDivElement | null = null;
+
     try {
-      showNotification('Đang tạo ảnh...', 'success');
+      showNotification('Đang xử lý hình ảnh...', 'success');
 
-      // Get actual dimensions
-      const rect = input.getBoundingClientRect();
-      const scrollWidth = Math.max(input.scrollWidth, rect.width);
-      const scrollHeight = Math.max(input.scrollHeight, rect.height);
+      // 1. Clone the DOM to modify it safely without affecting UI
+      const clone = input.cloneNode(true) as HTMLElement;
 
-      // Capture full content with proper dimensions
-      const canvas = await html2canvas(input, {
+      // 2. Setup a hidden container for the clone
+      cloneContainer = document.createElement('div');
+      cloneContainer.style.position = 'absolute';
+      cloneContainer.style.top = '-10000px';
+      cloneContainer.style.left = '-10000px';
+      cloneContainer.style.width = '1280px'; // Force a good desktop width
+      cloneContainer.style.height = 'auto'; // Allow height to grow
+      cloneContainer.style.zIndex = '-1';
+      document.body.appendChild(cloneContainer);
+      cloneContainer.appendChild(clone);
+
+      // 3. FIX: Remove transforms from Room 35 to prevent "constricted" or "missing people"
+      // caused by html2canvas misinterpreting scale() or viewport constraints.
+      const room35Content = clone.querySelector('#room-35-content') as HTMLElement;
+      const room35Container = clone.querySelector('#room-35-container') as HTMLElement;
+
+      if (room35Content) {
+        // Reset scale to 1:1
+        room35Content.style.transform = 'none';
+        room35Content.style.width = '100%';
+      }
+      if (room35Container) {
+        // Allow container to grow to fit unscaled content
+        room35Container.style.flex = 'none';
+        room35Container.style.height = 'auto';
+        room35Container.style.minHeight = '600px'; // Ensure base size
+      }
+
+      // Also ensure the main left column can grow
+      // We need to target the parent of room-35-container which is the left column.
+      // Since we don't have an ID on it easily, we can traverse or just let the main clone height:auto handle it.
+
+      // 4. Capture using html2canvas on the CLONE
+      // Wait a moment for fonts/styles? Usually ok synchronous-ish in React but good to wait a tick? 
+      // html2canvas is async.
+
+      const canvas = await html2canvas(clone, {
         scale: 2, // High resolution
         useCORS: true,
         logging: false,
-        width: scrollWidth,
-        height: scrollHeight,
-        windowWidth: scrollWidth,
-        windowHeight: scrollHeight,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0,
-        backgroundColor: '#ffffff' // Force white background
+        width: 1280, // Match container
+        windowWidth: 1280,
+        backgroundColor: '#ffffff',
+        onclone: (doc) => {
+          // Any direct DOM manipulation on the cloned doc can go here too
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      return canvas.toDataURL('image/png');
 
-      // Create download link
+    } catch (err) {
+      console.error('Capture error:', err);
+      showNotification('Lỗi khi xử lý hình ảnh', 'error');
+      return null;
+    } finally {
+      // 5. Cleanup
+      if (cloneContainer && document.body.contains(cloneContainer)) {
+        document.body.removeChild(cloneContainer);
+      }
+    }
+  };
+
+  const handleExportImage = async () => {
+    const imgData = await handleCapture();
+    if (!imgData) return;
+
+    try {
       const link = document.createElement('a');
       link.href = imgData;
       link.download = `so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
       showNotification('Đã lưu ảnh thành công!', 'success');
-    } catch (err) {
-      console.error(err);
-      showNotification('Lỗi khi xuất ảnh', 'error');
+    } catch (e) {
+      showNotification('Lỗi khi tải ảnh', 'error');
     }
   };
 
   const handleCopyToClipboard = async () => {
-    const input = document.getElementById('floor-plan-container');
-    if (!input) {
-      showNotification('Không tìm thấy sơ đồ để copy', 'error');
-      return;
-    }
+    const imgData = await handleCapture();
+    if (!imgData) return;
 
     try {
-      showNotification('Đang copy vào clipboard...', 'success');
+      // Convert DataURL to Blob
+      const res = await fetch(imgData);
+      const blob = await res.blob();
 
-      const rect = input.getBoundingClientRect();
-      const scrollWidth = Math.max(input.scrollWidth, rect.width);
-      const scrollHeight = Math.max(input.scrollHeight, rect.height);
-
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: scrollWidth,
-        height: scrollHeight,
-        windowWidth: scrollWidth,
-        windowHeight: scrollHeight,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0,
-        backgroundColor: '#ffffff'
-      });
-
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          showNotification('Lỗi tạo ảnh blob', 'error');
-          return;
-        }
-        try {
-          await navigator.clipboard.write([
-            new ClipboardItem({
-              [blob.type]: blob
-            })
-          ]);
-          showNotification('Đã copy ảnh vào clipboard!', 'success');
-        } catch (err) {
-          console.error('Clipboard write failed:', err);
-          showNotification('Trình duyệt không hỗ trợ copy ảnh này.', 'error');
-        }
-      });
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [blob.type]: blob
+        })
+      ]);
+      showNotification('Đã copy ảnh vào clipboard!', 'success');
     } catch (err) {
-      console.error(err);
-      showNotification('Lỗi khi copy ảnh', 'error');
+      console.error('Clipboard write failed:', err);
+      showNotification('Lỗi khi copy vào clipboard', 'error');
     }
   };
 
   const handleExportPDF = async () => {
-    const input = document.getElementById('floor-plan-container');
-    if (!input) {
-      showNotification('Không tìm thấy sơ đồ để xuất PDF', 'error');
-      return;
-    }
+    const imgData = await handleCapture();
+    if (!imgData) return;
 
     try {
       showNotification('Đang tạo PDF...', 'success');
 
-      const rect = input.getBoundingClientRect();
-      const scrollWidth = Math.max(input.scrollWidth, rect.width);
-      const scrollHeight = Math.max(input.scrollHeight, rect.height);
+      // Load image to get dimensions
+      const img = new Image();
+      img.src = imgData;
+      await new Promise((resolve) => { img.onload = resolve; });
 
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: scrollWidth,
-        height: scrollHeight,
-        windowWidth: scrollWidth,
-        windowHeight: scrollHeight,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0,
-        backgroundColor: '#ffffff'
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      
-      // Calculate PDF dimensions (maintain aspect ratio)
-      const imgWidth = scrollWidth;
-      const imgHeight = scrollHeight;
-      
-      // Initialize PDF (landscape, using pixels to match canvas)
       const pdf = new jsPDF({
-        orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+        orientation: img.width > img.height ? 'landscape' : 'portrait',
         unit: 'px',
-        format: [imgWidth, imgHeight]
+        format: [img.width, img.height]
       });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', 0, 0, img.width, img.height);
       pdf.save(`so-do-cho-ngoi-${new Date().toISOString().split('T')[0]}.pdf`);
 
       showNotification('Đã xuất PDF thành công!', 'success');
@@ -350,6 +342,8 @@ const App: React.FC = () => {
       showNotification('Lỗi khi xuất PDF', 'error');
     }
   };
+
+
 
   const showNotification = (msg: string, type: 'success' | 'error') => {
     setNotification({ msg, type });
