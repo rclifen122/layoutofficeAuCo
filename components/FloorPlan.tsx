@@ -243,7 +243,6 @@ const FloorPlan: React.FC<FloorPlanProps> = ({
         {/* Bottom: Room 35 People (Auto-FIT) */}
         <div
           id="room-35-container"
-          ref={room35ContainerRef}
           className="flex-[0.65] p-6 relative bg-white flex flex-col"
         >
           <div className="absolute top-0 right-0 bg-gray-200 px-3 py-1 text-xs font-bold border-bl rounded-bl z-20 shadow-sm border border-gray-300">
